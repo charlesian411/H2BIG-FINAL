@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>H2BIG Ledger - Inventory</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed": "#d6e3ff",
+                      "on-secondary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "inverse-on-surface": "#f3f0f0",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#dcd9d9",
+                      "surface-tint": "#005db5",
+                      "surface-container-low": "#f6f3f2",
+                      "on-error": "#ffffff",
+                      "secondary-fixed": "#e2e2e2",
+                      "error": "#ba1a1a",
+                      "surface": "#fbf9f8",
+                      "on-primary-fixed-variant": "#00468b",
+                      "secondary-container": "#dfe0e0",
+                      "inverse-primary": "#a8c8ff",
+                      "surface-bright": "#fbf9f8",
+                      "surface-container": "#f0eded",
+                      "outline-variant": "#c2c6d4",
+                      "on-secondary-fixed": "#1a1c1c",
+                      "tertiary-fixed": "#dce3eb",
+                      "tertiary": "#424950",
+                      "outline": "#727783",
+                      "on-secondary-container": "#616363",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#eae8e7",
+                      "secondary-fixed-dim": "#c6c6c7",
+                      "primary-fixed-dim": "#a8c8ff",
+                      "surface-variant": "#e4e2e1",
+                      "on-surface-variant": "#424752",
+                      "on-tertiary-container": "#d5dce4",
+                      "on-secondary-fixed-variant": "#454747",
+                      "on-background": "#1b1c1c",
+                      "tertiary-container": "#596167",
+                      "on-tertiary-fixed": "#151c22",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#00488d",
+                      "on-tertiary-fixed-variant": "#40484e",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-primary-fixed": "#001b3d",
+                      "background": "#fbf9f8",
+                      "primary-container": "#005fb8",
+                      "tertiary-fixed-dim": "#c0c7cf",
+                      "inverse-surface": "#303030",
+                      "on-primary-container": "#cadcff",
+                      "on-surface": "#1b1c1c",
+                      "secondary": "#5d5f5f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "stack-md": "16px",
+                      "gutter": "16px",
+                      "stack-lg": "32px",
+                      "stack-sm": "8px",
+                      "container-padding": "24px"
+              },
+              "fontFamily": {
+                      "body-base": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "code-data": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-base": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "code-data": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-base text-body-base h-screen flex overflow-hidden">
+<!-- SideNavBar (WEB) -->
+<nav class="hidden md:flex bg-surface-container-low dark:bg-inverse-surface text-primary dark:text-primary-fixed font-label-bold text-label-bold docked left-0 h-screen w-64 border-r border-outline-variant dark:border-outline flat no shadows transition-all duration-100 ease-in-out flex-col py-stack-md shrink-0">
+<div class="px-gutter mb-stack-lg">
+<div class="flex items-center gap-2 mb-2">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary font-headline-md text-headline-md font-black">H</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed leading-tight">H2BIG Ledger</h1>
+</div>
+</div>
+<button class="w-full mt-4 bg-primary text-on-primary py-2 rounded font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>add</span>
+                New Transaction
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="flex flex-col gap-1 px-2">
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="">Dashboard</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="">Customers</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="">POS/Sales</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">rebase_edit</span>
+<span class="">Bottle Tracking</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="">Deliveries</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="">Admin Reports</span>
+</a>
+</li><li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-primary-fixed border-l-4 border-primary hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="">Inventory</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="mt-auto px-2 pt-stack-md border-t border-outline-variant">
+<ul class="flex flex-col gap-1">
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="">Admin</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="">Logout</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 bg-[#F0F7FF]">
+<!-- TopNavBar (MOBILE ONLY) -->
+<nav class="md:hidden bg-surface dark:bg-inverse-surface text-primary dark:text-primary-fixed font-body-base text-body-base docked full-width top-0 border-b border-outline-variant dark:border-outline flat no shadows transition-colors duration-150 ease-in-out flex justify-between items-center px-gutter py-unit h-14 w-full">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">H2BIG</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container">
+<span class="material-symbols-outlined">help</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-outline-variant ml-2" data-alt="A small, professional circular avatar portrait of a business person. The lighting is soft and neutral, typical of a corporate headshot. The background is simple and out of focus. The image is cropped tightly to the face and shoulders, conveying a sense of approachability and professionalism suitable for a system management dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARTb9RsvcnwHECiqRxM8GEdzJTdmiUs-8sJtCtrYhu6goCh-XHICjQ9dCPo3kvNhUPDMk1zAZTEdIwkkWPXJApx_CYyCF86LBuiGCbjK217KYVowIwHN6YeJA5e9GmF846rDZ6kA-IR5e5i4qTTMaAKIrsqrqft0tOCv-09eZJP6HzEFgcqCAW4BjrU56k_XJAn-K7X2fFPlKGfiNGkkKJYFxV6oyPcFy152waMOq-kfSStCSQ70ICu0WyAccMMRpFSer5Efg2Y4c"/>
+</div>
+</nav>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-container-padding flex flex-col gap-stack-lg">
+<!-- Header & Actions -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 border border-outline-variant shadow-[0_1px_2px_rgba(0,0,0,0.05)] rounded">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-background">Product Inventory</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage stock levels, pricing, and product status.</p>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-white border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded font-body-sm text-body-sm outline-none transition-all" placeholder="Search products..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-4 py-1.5 border border-primary hover:bg-primary-container hover:border-primary-container active:bg-[#003B75] active:border-[#003B75] active:shadow-[inset_0_3px_5px_rgba(0,0,0,0.2)] rounded font-label-bold text-label-bold whitespace-nowrap transition-all shadow-[0_1px_2px_rgba(0,0,0,0.1)] flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Add New Product
+                    </button>
+</div>
+</div>
+<!-- Data Grid -->
+<div class="bg-white border border-outline-variant rounded shadow-[0_1px_2px_rgba(0,0,0,0.05)] overflow-hidden flex-1 flex flex-col">
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant sticky top-0 z-10">
+<tr><th class="py-2 px-3 font-label-bold text-label-bold text-tertiary border-r border-outline-variant/50 w-24 text-center">ID</th><th class="py-2 px-3 font-label-bold text-label-bold text-tertiary border-r border-outline-variant/50 text-center">Name</th><th class="py-2 px-3 font-label-bold text-label-bold text-tertiary border-r border-outline-variant/50 w-32 text-center">Price</th><th class="py-2 px-3 font-label-bold text-label-bold text-tertiary border-r border-outline-variant/50 w-32 text-center">Stock Qty</th><th class="py-2 px-3 font-label-bold text-label-bold text-tertiary w-32 border-r border-outline-variant/50 text-center">Status</th><th class="py-2 px-3 font-label-bold text-label-bold text-tertiary w-24 text-center">Actions</th></tr>
+</thead>
+<tbody class="font-code-data text-code-data text-on-surface">
+<tr class="hover:bg-surface-container-lowest border-b border-outline-variant/30"><td class="py-2 px-3 border-r border-outline-variant/50 text-center">PRD-001</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">5 Gallon Purified Water</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">$6.50</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">450</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-sm bg-[#E6F4EA] text-[#137333] font-label-bold text-[10px] uppercase tracking-wider border border-[#CEEAD6]">Active</span></td><td class="py-2 px-3 text-center"><div class="flex justify-center items-center gap-2"><button class="p-1 hover:bg-surface-container rounded transition-colors text-primary"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1 hover:bg-error-container hover:text-error rounded transition-colors text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></td></tr>
+<tr class="bg-surface hover:bg-surface-container-lowest border-b border-outline-variant/30"><td class="py-2 px-3 border-r border-outline-variant/50 text-center">PRD-002</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">5 Gallon Alkaline Water</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">$8.00</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">120</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-sm bg-[#E6F4EA] text-[#137333] font-label-bold text-[10px] uppercase tracking-wider border border-[#CEEAD6]">Active</span></td><td class="py-2 px-3 text-center"><div class="flex justify-center items-center gap-2"><button class="p-1 hover:bg-surface-container rounded transition-colors text-primary"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1 hover:bg-error-container hover:text-error rounded transition-colors text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></td></tr>
+<tr class="hover:bg-surface-container-lowest border-b border-outline-variant/30"><td class="py-2 px-3 border-r border-outline-variant/50 text-center">PRD-003</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">Water Dispenser (Hot/Cold)</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">$150.00</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">15</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-sm bg-[#E6F4EA] text-[#137333] font-label-bold text-[10px] uppercase tracking-wider border border-[#CEEAD6]">Active</span></td><td class="py-2 px-3 text-center"><div class="flex justify-center items-center gap-2"><button class="p-1 hover:bg-surface-container rounded transition-colors text-primary"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1 hover:bg-error-container hover:text-error rounded transition-colors text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></td></tr>
+<tr class="bg-surface hover:bg-surface-container-lowest border-b border-outline-variant/30 text-on-surface-variant"><td class="py-2 px-3 border-r border-outline-variant/50 text-center">PRD-004</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">3 Gallon Purified Water</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">$4.50</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">0</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-sm bg-surface-container text-on-surface-variant font-label-bold text-[10px] uppercase tracking-wider border border-outline-variant">Inactive</span></td><td class="py-2 px-3 text-center"><div class="flex justify-center items-center gap-2"><button class="p-1 hover:bg-surface-container rounded transition-colors text-primary"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1 hover:bg-error-container hover:text-error rounded transition-colors text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></td></tr>
+<tr class="hover:bg-surface-container-lowest border-b border-outline-variant/30"><td class="py-2 px-3 border-r border-outline-variant/50 text-center">PRD-005</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">Empty 5 Gallon Bottle (Deposit)</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">$10.00</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center">800</td><td class="py-2 px-3 border-r border-outline-variant/50 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-sm bg-[#E6F4EA] text-[#137333] font-label-bold text-[10px] uppercase tracking-wider border border-[#CEEAD6]">Active</span></td><td class="py-2 px-3 text-center"><div class="flex justify-center items-center gap-2"><button class="p-1 hover:bg-surface-container rounded transition-colors text-primary"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1 hover:bg-error-container hover:text-error rounded transition-colors text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></td></tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-surface-container-low border-t border-outline-variant p-2 flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Showing 1 to 5 of 124 entries</span>
+<div class="flex gap-1">
+<button class="px-2 py-1 border border-outline-variant bg-white rounded text-on-surface hover:bg-surface-container disabled:opacity-50" disabled="">Prev</button>
+<button class="px-2 py-1 border border-primary bg-primary text-on-primary rounded">1</button>
+<button class="px-2 py-1 border border-outline-variant bg-white rounded text-on-surface hover:bg-surface-container">2</button>
+<button class="px-2 py-1 border border-outline-variant bg-white rounded text-on-surface hover:bg-surface-container">3</button>
+<button class="px-2 py-1 border border-outline-variant bg-white rounded text-on-surface hover:bg-surface-container">Next</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

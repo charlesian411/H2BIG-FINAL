@@ -62,11 +62,31 @@ After processing the sale, the assigned rider's name should be displayed on the 
 
 ---
 
-# Admin Bottle Tracking
+# Admin Bottle Ledger (formerly Bottle Tracking)
 
-In the Bottle Tracking section, there is a search bar for searching a customer by name or ID. After searching, the customer's Transaction History table is displayed, showing the Date & Time of each order, the Transaction ID, Bottles Out, Bottles In, Running Balance (the number of bottles still not returned), and the names of the Staff and Rider who processed the transaction.
+In the Bottle Ledger section, there is a search bar for searching a customer by name or ID. After searching, the customer's Transaction History table is displayed, showing the Date & Time of each order, the Transaction ID, Bottles Out, Bottles In, Running Balance (the number of bottles still not returned), and the names of the Staff and Rider who processed the transaction.
 
 Above the table, the admin can also view the Total Bottles Out, Total Bottles Returned, and Current Bottle Debt.
+
+---
+
+# Admin Reports
+
+The Admin Reports page provides a system overview and executive metrics.
+
+**Summary Metrics:**
+- **Total Sales (Today):** Displays the total revenue generated for the current day, including a percentage comparison (e.g., +8.2%).
+- **Pending Deliveries:** Shows the number of active routes or deliveries currently in progress.
+- **Total Bottle Debt:** Displays the total number of units outstanding across all customers.
+
+**Visualizations & Alerts:**
+- **Profit & Loss (YTD) Chart:** A visual representation of Revenue versus Operating Expenses throughout the year.
+- **Debt Alerts Table:** A high-priority table highlighting customers with significant bottle debt. Columns include Customer ID, Units, and Status (Critical, Warning, or Watch).
+- **View Full Ledger Link:** A quick navigation link at the bottom of the Debt Alerts section that takes the admin directly to the Bottle Ledger page.
+
+**Tools:**
+- **Export PDF Button:** Allows the admin to generate a PDF report of the current view.
+- **Date Range Picker:** Allows the admin to filter the metrics and charts based on a specific time period.
 
 ----
 
@@ -80,11 +100,13 @@ CUSTOMERS
 
 POS/SALES
 
-BOTTLE TRACKING
+BOTTLE LEDGER
 
-ASSIGNED DELIVIRIES
+ASSIGNED DELIVERIES
 
 INVENTORY (ONLY CAN ADMIN ACCESS THIS)
+
+ADMIN REPORTS (ONLY CAN ADMIN ACCESS THIS)
 
 STAFF SIDEBAR DASHBOARD FROM TOP TO BOTTOM:
 
@@ -92,12 +114,11 @@ Staff DASHBOARD
 
 CUSTOMERS
 
-
 POS/SALES
 
-BOTTLE TRACKING
+BOTTLE LEDGER
 
-ASSIGNED DELIVIRIES
+ASSIGNED DELIVERIES
 
 ---
 

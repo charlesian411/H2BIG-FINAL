@@ -1,0 +1,343 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>H2BIG Ledger - POS/Sales</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#d6e3ff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9d9",
+                        "surface-tint": "#005db5",
+                        "surface-container-low": "#f6f3f2",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e2e2e2",
+                        "error": "#ba1a1a",
+                        "surface": "#fbf9f8",
+                        "on-primary-fixed-variant": "#00468b",
+                        "secondary-container": "#dfe0e0",
+                        "inverse-primary": "#a8c8ff",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container": "#f0eded",
+                        "outline-variant": "#c2c6d4",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "tertiary-fixed": "#dce3eb",
+                        "tertiary": "#424950",
+                        "outline": "#727783",
+                        "on-secondary-container": "#616363",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e4e2e1",
+                        "on-surface-variant": "#424752",
+                        "on-tertiary-container": "#d5dce4",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-background": "#1b1c1c",
+                        "tertiary-container": "#596167",
+                        "on-tertiary-fixed": "#151c22",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#00488d",
+                        "on-tertiary-fixed-variant": "#40484e",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed": "#001b3d",
+                        "background": "#fbf9f8",
+                        "primary-container": "#005fb8",
+                        "tertiary-fixed-dim": "#c0c7cf",
+                        "inverse-surface": "#303030",
+                        "on-primary-container": "#cadcff",
+                        "on-surface": "#1b1c1c",
+                        "secondary": "#5d5f5f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "gutter": "16px",
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "code-data": ["Inter"],
+                        "label-bold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-base": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "code-data": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F0F7FF; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        /* Custom scrollbar for data dense areas */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #fbf9f8; }
+        ::-webkit-scrollbar-thumb { background: #c2c6d4; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #727783; }
+        /* Windows Forms inspired precise borders */
+        .win-border { border: 1px solid #727783; }
+        .win-panel { background-color: #FFFFFF; border: 1px solid #c2c6d4; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-on-surface">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline flex flex-col h-full py-stack-md shrink-0 w-64 transition-all duration-100 ease-in-out">
+<div class="px-gutter mb-stack-lg">
+<div class="flex items-center gap-unit mb-unit">
+<span class="material-symbols-outlined icon-fill text-primary text-2xl">water_drop</span>
+<h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed">H2BIG Ledger</h1>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-[2px]">
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+                    Customers
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-primary-fixed border-l-4 border-primary font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+                    POS/Sales
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">rebase_edit</span>
+                    Bottle Tracking
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                    Deliveries
+                </a>
+</li>
+
+</ul>
+<div class="mt-auto pt-stack-md border-t border-outline-variant">
+<ul class="flex flex-col gap-[2px]">
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>Staff</a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack-sm px-gutter py-stack-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined text-[20px]">history_edu</span>Logout</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full bg-[#F0F7FF] overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline flex justify-between items-center px-gutter py-unit h-14 w-full shrink-0">
+<div class="flex items-center gap-stack-sm">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">H2BIG</span>
+</div>
+</header>
+<!-- POS Canvas -->
+<div class="flex-1 flex gap-gutter p-container-padding overflow-hidden h-full">
+<!-- Left Side: Product Selection -->
+<section class="flex-1 flex flex-col gap-stack-md h-full overflow-hidden">
+<!-- Customer Context Bar -->
+<div class="win-panel p-stack-sm flex items-center justify-between shadow-sm">
+<div class="flex items-center w-full gap-stack-md justify-between"><div class="flex w-full items-center gap-stack-md">
+<div class="flex items-center gap-[2px] p-[2px] bg-surface-container-low win-border rounded shrink-0">
+<button class="px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-colors">Walk-in</button>
+<button class="px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant">Delivery</button>
+</div>
+<div class="flex-1 flex win-border rounded bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden">
+<div class="relative flex-1 flex items-center">
+<span class="material-symbols-outlined absolute left-2 text-outline text-[18px]">person_search</span>
+<input class="w-full pl-8 pr-unit py-1.5 text-body-base font-body-base border-none outline-none focus:ring-0 bg-transparent" id="customerSearch" placeholder="Search Customer Name..." type="text">
+</div>
+</div>
+</div></div>
+</div>
+<!-- Product Grid -->
+<div class="flex-1 overflow-y-auto win-panel p-stack-md shadow-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-stack-md border-b border-outline-variant pb-unit">Products</h2>
+<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-stack-md">
+<!-- Product Card 1 -->
+<div class="border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full">
+<div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-[28px]">water_bottle</span>
+<span class="bg-[#E6F4EA] text-[#137333] px-2 py-[2px] rounded text-[10px] font-bold border border-[#CEEAD6]">Stock: 142</span>
+</div>
+<div class="p-stack-sm flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface">5 Gal. Refill</h3>
+<p class="font-code-data text-code-data text-on-surface-variant mt-1">$1.50</p>
+</div>
+<div class="mt-stack-sm flex items-center justify-between border-t border-outline-variant pt-unit hidden group-hover:flex">
+<button class="p-1 text-outline hover:text-primary"><span class="material-symbols-outlined text-[18px]">remove</span></button>
+<span class="font-code-data text-code-data">1</span>
+<button class="p-1 text-outline hover:text-primary"><span class="material-symbols-outlined text-[18px]">add</span></button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full">
+<div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-[28px]">water_bottle</span>
+<span class="bg-[#E6F4EA] text-[#137333] px-2 py-[2px] rounded text-[10px] font-bold border border-[#CEEAD6]">Stock: 85</span>
+</div>
+<div class="p-stack-sm flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface">3 Gal. Refill</h3>
+<p class="font-code-data text-code-data text-on-surface-variant mt-1">$1.00</p>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full opacity-50">
+<div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start">
+<span class="material-symbols-outlined text-outline text-[28px]">water_bottle</span>
+<span class="bg-[#FCE8E6] text-[#C5221F] px-2 py-[2px] rounded text-[10px] font-bold border border-[#F9D0C4]">Stock: 0</span>
+</div>
+<div class="p-stack-sm flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface">New 5 Gal. Bottle</h3>
+<p class="font-code-data text-code-data text-on-surface-variant mt-1">$8.00</p>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full">
+<div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-[28px]">propane_tank</span>
+<span class="bg-[#E6F4EA] text-[#137333] px-2 py-[2px] rounded text-[10px] font-bold border border-[#CEEAD6]">Stock: 40</span>
+</div>
+<div class="p-stack-sm flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface">Slim Container</h3>
+<p class="font-code-data text-code-data text-on-surface-variant mt-1">$5.50</p>
+</div>
+</div>
+</div>
+<!-- Product Card 5 -->
+<div class="border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full">
+<div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-[28px]">local_drink</span>
+<span class="bg-[#E6F4EA] text-[#137333] px-2 py-[2px] rounded text-[10px] font-bold border border-[#CEEAD6]">Stock: 210</span>
+</div>
+<div class="p-stack-sm flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface">1L Bottled Water</h3>
+<p class="font-code-data text-code-data text-on-surface-variant mt-1">$0.75</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Side: Order Summary -->
+<aside class="w-96 flex flex-col h-full win-panel shadow-md">
+<div class="p-stack-md border-b border-outline-variant bg-surface-container-low">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center justify-between">
+                        Order Summary
+                        <span class="font-label-bold text-label-bold bg-primary-container text-on-primary-container px-2 py-1 rounded">Ticket #1042</span>
+</h2>
+<div class="mt-2 flex items-center text-on-surface-variant font-body-sm text-body-sm gap-unit">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span class="">Guest (Walk-in)</span>
+</div>
+</div>
+<!-- Cart Items -->
+<div class="flex-1 overflow-y-auto p-stack-sm bg-surface-container-lowest">
+<!-- Item Row -->
+<div class="flex items-center justify-between border-b border-outline-variant py-stack-sm">
+<div class="flex-1">
+<h4 class="font-label-bold text-label-bold text-on-surface">5 Gal. Refill</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$1.50 / ea</p>
+</div>
+<div class="flex items-center gap-stack-sm">
+<div class="flex items-center win-border rounded bg-surface">
+<button class="px-2 py-1 hover:bg-surface-variant text-outline border-r border-outline-variant"><span class="material-symbols-outlined text-[16px] block">remove</span></button>
+<input class="w-8 text-center font-code-data text-code-data border-none p-0 h-[26px] outline-none" readonly="" type="text" value="2">
+<button class="px-2 py-1 hover:bg-surface-variant text-outline border-l border-outline-variant"><span class="material-symbols-outlined text-[16px] block">add</span></button>
+</div>
+<span class="font-code-data text-code-data w-12 text-right">$3.00</span>
+<button class="text-error hover:bg-error-container p-1 rounded"><span class="material-symbols-outlined text-[18px] block">delete</span></button>
+</div>
+</div>
+<!-- Item Row -->
+<div class="flex items-center justify-between border-b border-outline-variant py-stack-sm">
+<div class="flex-1">
+<h4 class="font-label-bold text-label-bold text-on-surface">Slim Container</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$5.50 / ea</p>
+</div>
+<div class="flex items-center gap-stack-sm">
+<div class="flex items-center win-border rounded bg-surface">
+<button class="px-2 py-1 hover:bg-surface-variant text-outline border-r border-outline-variant"><span class="material-symbols-outlined text-[16px] block">remove</span></button>
+<input class="w-8 text-center font-code-data text-code-data border-none p-0 h-[26px] outline-none" readonly="" type="text" value="1">
+<button class="px-2 py-1 hover:bg-surface-variant text-outline border-l border-outline-variant"><span class="material-symbols-outlined text-[16px] block">add</span></button>
+</div>
+<span class="font-code-data text-code-data w-12 text-right">$5.50</span>
+<button class="text-error hover:bg-error-container p-1 rounded"><span class="material-symbols-outlined text-[18px] block">delete</span></button>
+</div>
+</div>
+</div>
+<!-- Totals & Action -->
+<div class="p-stack-md border-t border-outline-variant bg-surface-container-low">
+<div class="flex justify-between items-center mb-unit font-body-base text-body-base text-on-surface-variant">
+<span class="">Subtotal</span>
+<span class="font-code-data text-code-data">$8.50</span>
+</div>
+<div class="flex justify-between items-center mb-stack-sm font-body-base text-body-base text-on-surface-variant">
+<span class="">Tax (8%)</span>
+<span class="font-code-data text-code-data">$0.68</span>
+</div>
+<div class="flex justify-between items-center mb-stack-md font-headline-md text-headline-md text-on-surface border-t border-outline-variant pt-unit">
+<span class="">Total</span>
+<span class="font-code-data text-code-data text-primary">$9.18</span>
+</div>
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-headline-md text-headline-md py-stack-sm rounded shadow flex items-center justify-center gap-stack-sm transition-colors uppercase tracking-wider">
+<span class="material-symbols-outlined">payments</span>
+                        Process Sale
+                    </button>
+</div>
+</aside>
+</div>
+</main>
+
+
+
+
+</body></html>
