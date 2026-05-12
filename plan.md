@@ -15,33 +15,18 @@
 
 ---
 
-## 🗺️ Navigation & Page Mapping Guide
-### 1. Authentication (Login)
-| Stitch Folder Path | C# Route (URL) | Controller / Action |
-| :--- | :--- | :--- |
-| `Stitch-Final-Design/LOGIN/` | `/Auth/Login` | `AuthController.Login` |
+## 🗺️ Role-Based Navigation Mapping
+This guide defines which links are visible in the **Global Sidebar** for each role.
 
-### 2. Admin Pages
-| Category | Stitch Folder Path | C# Route (URL) | Controller / Action |
-| :--- | :--- | :--- | :--- |
-| **Dashboard** | `.../ADMIN/admin_dashboard_...` | `/Admin/Dashboard` | `AdminController.Index` |
-| **Customers** | `.../ADMIN/customer_management_...` | `/Admin/Customers` | `CustomerController.Index` |
-| **POS (Walk-In)** | `.../ADMIN/sales_pos_...h2big_1` | `/Admin/POS/WalkIn` | `SalesController.WalkIn` |
-| **POS (Delivery)** | `.../ADMIN/sales_pos_...h2big_2` | `/Admin/POS/Delivery` | `SalesController.Delivery` |
-| **Bottle Ledger** | `.../ADMIN/bottle_ledger/` | `/Admin/BottleLedger` | `BottleController.Index` |
-| **Deliveries** | `.../ADMIN/assigned_deliveries_...` | `/Admin/Deliveries` | `DeliveryController.Index` |
-| **Inventory** | `.../ADMIN/product_inventory_...` | `/Admin/Inventory` | `InventoryController.Index` |
-| **Admin Reports** | `.../ADMIN/admin_reports/` | `/Admin/Reports` | `ReportController.Index` |
-
-### 3. Staff Pages
-| Category | Stitch Folder Path | C# Route (URL) | Controller / Action |
-| :--- | :--- | :--- | :--- |
-| **Dashboard** | `.../STAFF/staff_dashboard_...` | `/Staff/Dashboard` | `StaffController.Index` |
-| **Customers** | `.../STAFF/customer_management_...` | `/Staff/Customers" | `CustomerController.Index` |
-| **POS (Walk-In)** | `.../STAFF/sales_pos_...Walk-In" | `/Staff/POS/WalkIn` | `SalesController.WalkIn` |
-| **POS (Delivery)** | `.../STAFF/sales_pos_...Delivery" | `/Staff/POS/Delivery` | `SalesController.Delivery` |
-| **Bottle Ledger** | `.../STAFF/bottle_ledger/` | `/Staff/BottleLedger` | `BottleController.Index` |
-| **Deliveries** | `.../STAFF/assigned_deliveries_...` | `/Staff/Deliveries" | `DeliveryController.Index` |
+| Category | C# Route (URL) | Admin | Staff | Rider |
+| :--- | :--- | :---: | :---: | :---: |
+| **Dashboard** | `/[Role]/Dashboard` | ✅ | ✅ | ✅ |
+| **Customers** | `/Customer/Index` | ✅ | ✅ | ❌ |
+| **POS/Sales** | `/Sales/POS` | ✅ | ✅ | ❌ |
+| **Bottle Ledger** | `/Bottle/Ledger` | ✅ | ✅ | ❌ |
+| **Deliveries** | `/Delivery/Index` | ✅ | ✅ | ❌ |
+| **Inventory** | `/Inventory/Index` | ✅ | ❌ | ❌ |
+| **Admin Reports** | `/Report/Index` | ✅ | ❌ | ❌ |
 
 ---
 
@@ -52,16 +37,39 @@ H2BIG/
 │   ├── AuthController.cs
 │   ├── AdminController.cs
 │   ├── StaffController.cs
+│   ├── RiderController.cs
 │   ├── CustomerController.cs
-│   ├── ProductController.cs
 │   ├── SalesController.cs
 │   ├── BottleController.cs
 │   ├── DeliveryController.cs
-│   ├── ReportController.cs
-│   └── UserController.cs
+│   ├── InventoryController.cs
+│   └── ReportController.cs
 ├── Models/              
-├── Data/                # DatabaseHelper.cs
+├── Data/                
+│   └── DatabaseHelper.cs
 ├── Views/               
+│   ├── Shared/
+│   │   └── _Layout.cshtml   # Global Dynamic Sidebar
+│   ├── Auth/
+│   │   └── Login.cshtml
+│   ├── Admin/
+│   │   └── Dashboard.cshtml
+│   ├── Staff/
+│   │   └── Dashboard.cshtml
+│   ├── Rider/
+│   │   └── Dashboard.cshtml
+│   ├── Customer/
+│   │   └── Index.cshtml
+│   ├── Sales/
+│   │   └── POS.cshtml
+│   ├── Bottle/
+│   │   └── Ledger.cshtml
+│   ├── Delivery/
+│   │   └── Index.cshtml
+│   ├── Inventory/
+│   │   └── Index.cshtml
+│   └── Report/
+│       └── Index.cshtml
 ├── wwwroot/             
 ├── appsettings.json     
 └── Program.cs           
@@ -161,12 +169,72 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 ---
 
 ### Phase 3 — Frontend Integration 🎨
-1.  **Layout Porting:** Use Stitch sidebars. (Admin sidebar order: Dashboard -> Customers -> POS -> Bottle Ledger -> Deliveries -> Inventory -> Admin Reports).
-2.  **View Porting:** Port all Stitch layouts, including the new **Admin Reports** dashboard.
-3.  **Interactions:** Modal for Rider selection; Chart.js integration for P&L chart on Admin Reports.
-4.  **Print Styling:** Browser-print CSS for receipts and reports.
+
+#### 1. Global Dynamic Sidebar (`_Layout.cshtml`)
+**Goal:** Implement a single master sidebar that adapts to the logged-in role.
+- **Architecture:** Use `@if (User.IsInRole("..."))` or Session-based role checks to show/hide the `<li>` items.
+- **Global Branding & Icons:** As per the `ADMIN/bottle_ledger` design, the global sidebar must strictly use:
+    - **Logo:** Water drop icon + "H2BIG Ledger" text.
+    - **Dashboard Icon:** 2x2 grid.
+    - **Customers Icon:** People group.
+    - **POS/Sales Icon:** Cash register.
+    - **Bottle Ledger Icon:** Connected nodes/route.
+    - **Deliveries Icon:** Delivery truck.
+    - **Inventory Icon:** Package/box.
+    - **Admin Reports Icon:** Bar chart.
+- **Role Visibility:**
+    - **Admin:** All links visible.
+    - **Staff:** (Dashboard, Customers, POS, Ledger, Deliveries).
+    - **Rider:** Only (Rider Dashboard).
+- **Active State:** JavaScript snippet to add the `bg-blue-600` class to the link matching `window.location.pathname`.
+- **Profile Section (Bottom Left):** 
+    - Dynamic Role Name (using the Shield/User icon) & Logout button (using the Exit/Door icon).
+- **Cleanup:** Remove "New Transaction" placeholder.
+
+#### 2. Login Page (`Auth/Login.cshtml`)
+- **UI:** Centralized card with "H2BIG Ledger" branding.
+- **Form:** Username and Password fields with Tailwind focus states.
+
+#### 3. Admin Dashboard (`Admin/Dashboard.cshtml`)
+- **Summary Cards:** 4 High-visibility cards (Revenue, Active Orders, Bottle Debt, Profit).
+- **Sales Trends Chart:** Integrate **Chart.js** for the bar chart.
+- **Urgent Debt Alerts:** Table showing the top 5 debtors.
+
+#### 4. Staff Dashboard (`Staff/Dashboard.cshtml`)
+- **Metrics:** Today's Sales, Pending Deliveries, Bottles In/Out (progress bar).
+- **Upcoming Deliveries:** Table with color-coded status badges (LOADED, PENDING, DELAYED).
+
+#### 5. Rider Dashboard (`Rider/Dashboard.cshtml`)
+- **Goal:** Simplified one-page view for delivery tracking.
+- **UI:** 2 Summary cards with progress indicators as seen in `RIDER/screen.png`.
+- **Metrics:** 
+    - **Out for Delivery:** Real-time count of bottles assigned to the rider.
+    - **Total Bottles Delivered:** Cumulative successful completions.
+
+#### 6. POS / Sales (`Sales/POS.cshtml`)
+- **Mode Toggle:** Switch between "Walk-In" and "Delivery".
+- **Product Grid:** Responsive grid with stock counts and +/- logic.
+- **Order Summary:** Sidebar calculating Subtotal, Tax, and Total in real-time.
+
+#### 7. Bottle Ledger (`Bottle/Ledger.cshtml`)
+- **Customer Search:** Global search bar.
+- **History Table:** Row-by-row transaction log with "Running Balance" calculation logic in the Razor loop.
+
+#### 8. Assigned Deliveries (`Delivery/Index.cshtml`)
+- **Grid Layout:** Card-based view.
+- **Role Awareness:** 
+    - **Admin/Staff:** See all deliveries.
+    - **Rider:** Filtered to only show deliveries where `RiderID == CurrentUser.ID`.
+- **Actions:** "Mark Delivered" triggers a status update and refreshes the card.
 
 ---
+
+---
+
+## 🛠️ UI Technical Standards
+1. **Responsiveness:** Maintain Stitch grid behavior across devices.
+2. **Interactivity:** Use vanilla JS for POS sidebar calculations.
+3. **Icons & Branding:** Strictly extract and use the SVG icons and logo exactly as they appear in the `ADMIN/bottle_ledger` template for the global sidebar layout across all roles.
 
 ### Phase 4 — Polish & Verification ✅
 1.  **Validation & Security:** Implement role-based [Authorize] logic.
