@@ -79,7 +79,7 @@ H2BIG/
 
 ## Phased Build Plan
 
-### Phase 0 — Prerequisites & Project Setup 🛠️
+### Phase 0 — Prerequisites & Project Setup ✅ [COMPLETED]
 **Goal:** Prepare your environment, download dependencies, and initialize the C# project in VS Code/Antigravity.
 
 **📦 Required Downloads:**
@@ -116,7 +116,7 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 
 ---
 
-### Phase 1 — Database Design (XAMPP/phpMyAdmin) 🗄️
+### Phase 1 — Database Design (XAMPP/phpMyAdmin) 🗄️ [PENDING]
 **Goal:** Design and create all MySQL tables, relationships, and seed data in your local XAMPP.
 
 **Deliverables:**
@@ -135,7 +135,7 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 
 ---
 
-### Phase 2 — Backend Development 🔧
+### Phase 2 — Backend Development 🔧 [PENDING]
 1.  **Auth Module:** Implement role-based redirection and role-aware Session logic.
 2.  **Customer Management Logic (Admin & Staff):**
     - Search logic by Customer Name.
@@ -168,7 +168,7 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 
 ---
 
-### Phase 3 — Frontend Integration 🎨
+### Phase 3 — Frontend Integration 🎨 [PENDING]
 
 #### 1. Global Dynamic Sidebar (`_Layout.cshtml`)
 **Goal:** Implement a single master sidebar that adapts to the logged-in role.
@@ -236,6 +236,6 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 2. **Interactivity:** Use vanilla JS for POS sidebar calculations.
 3. **Icons & Branding:** Strictly extract and use the SVG icons and logo exactly as they appear in the `ADMIN/bottle_ledger` template for the global sidebar layout across all roles.
 
-### Phase 4 — Polish & Verification ✅
+### Phase 4 — Polish & Verification ✅ [PENDING]
 1.  **Validation & Security:** Implement role-based [Authorize] logic.
 2.  **Verification:** Complete end-to-end walkthrough for all Admin and Staff flows.
