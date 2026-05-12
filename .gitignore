@@ -1,2 +1,16 @@
-# /.agents
-# Stitch-Final-Design
+/.agents
+/Stitch-Final-Design
+/H2BIG_FLOW.md
+
+# .NET / Visual Studio Ignores
+[Bb]in/
+[Oo]bj/
+out/
+.vscode/
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+appsettings.Development.json
+.DS_Store
