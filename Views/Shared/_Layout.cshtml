@@ -1,49 +1,228 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - H2BIG</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/H2BIG.styles.css" asp-append-version="true" />
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#d6e3ff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9d9",
+                        "surface-tint": "#005db5",
+                        "surface-container-low": "#f6f3f2",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e2e2e2",
+                        "error": "#ba1a1a",
+                        "surface": "#fbf9f8",
+                        "on-primary-fixed-variant": "#00468b",
+                        "secondary-container": "#dfe0e0",
+                        "inverse-primary": "#a8c8ff",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container": "#f0eded",
+                        "outline-variant": "#c2c6d4",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "tertiary-fixed": "#dce3eb",
+                        "tertiary": "#424950",
+                        "outline": "#727783",
+                        "on-secondary-container": "#616363",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e4e2e1",
+                        "on-surface-variant": "#424752",
+                        "on-tertiary-container": "#d5dce4",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-background": "#1b1c1c",
+                        "tertiary-container": "#596167",
+                        "on-tertiary-fixed": "#151c22",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#00488d",
+                        "on-tertiary-fixed-variant": "#40484e",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed": "#001b3d",
+                        "background": "#fbf9f8",
+                        "primary-container": "#005fb8",
+                        "tertiary-fixed-dim": "#c0c7cf",
+                        "inverse-surface": "#303030",
+                        "on-primary-container": "#cadcff",
+                        "on-surface": "#1b1c1c",
+                        "secondary": "#5d5f5f"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "gutter": "16px",
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "container-padding": "24px"
+                    },
+                    fontFamily: {
+                        "body-base": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "code-data": ["Inter"],
+                        "label-bold": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">H2BIG</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+<body class="bg-background text-on-surface font-body-base text-body-base h-screen flex overflow-hidden">
+    
+    @{
+        var role = Context.Session.GetString("UserRole");
+        var userName = Context.Session.GetString("UserName") ?? "Guest";
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        
+        string activeClass = "bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-primary-fixed border-l-4 border-primary";
+        string inactiveClass = "text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-secondary-container";
+    }
+
+    @if (!string.IsNullOrEmpty(role))
+    {
+        <!-- SideNavBar (Web Only) -->
+        <nav class="hidden md:flex flex-col h-full py-stack-md shrink-0 bg-surface-container-low dark:bg-inverse-surface text-primary dark:text-primary-fixed font-label-bold text-label-bold border-r border-outline-variant dark:border-outline docked left-0 h-screen w-64 z-10 transition-all duration-100 ease-in-out">
+            <div class="px-gutter mb-stack-lg">
+                <div class="flex items-center gap-stack-sm mb-stack-sm">
+                    <div class="w-8 h-8 rounded-DEFAULT bg-primary flex items-center justify-center text-on-primary">
+                        <span class="material-symbols-outlined" data-icon="water_drop">water_drop</span>
+                    </div>
+                    <div>
+                        <h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed">H2BIG Ledger</h1>
+                    </div>
                 </div>
             </div>
+            <div class="flex-1 overflow-y-auto px-unit">
+                <ul class="space-y-unit">
+                    @if (role == "Admin" || role == "Staff" || role == "Rider")
+                    {
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == role ? activeClass : inactiveClass)" asp-controller="@role" asp-action="Dashboard">
+                                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                                Dashboard
+                            </a>
+                        </li>
+                    }
+
+                    @if (role == "Admin" || role == "Staff")
+                    {
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Customer" ? activeClass : inactiveClass)" asp-controller="Customer" asp-action="Index">
+                                <span class="material-symbols-outlined" data-icon="groups">groups</span>
+                                Customers
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Sales" ? activeClass : inactiveClass)" asp-controller="Sales" asp-action="POS">
+                                <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
+                                POS/Sales
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Bottle" ? activeClass : inactiveClass)" asp-controller="Bottle" asp-action="Ledger">
+                                <span class="material-symbols-outlined" data-icon="rebase_edit">rebase_edit</span>
+                                Bottle Tracking
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Delivery" ? activeClass : inactiveClass)" asp-controller="Delivery" asp-action="Index">
+                                <span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+                                Assigned Deliveries
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Inventory" ? activeClass : inactiveClass)" asp-controller="Inventory" asp-action="Index">
+                                <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                                Inventory
+                            </a>
+                        </li>
+                    }
+
+                    @if (role == "Admin")
+                    {
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Users" ? activeClass : inactiveClass)" asp-controller="Users" asp-action="Index">
+                                <span class="material-symbols-outlined" data-icon="badge">badge</span>
+                                Employees
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Report" ? activeClass : inactiveClass)" asp-controller="Report" asp-action="Index">
+                                <span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                                Admin Reports
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="mt-auto px-unit pt-stack-md border-t border-outline-variant">
+                <ul class="space-y-unit">
+                    <li>
+                        <div class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant transition-all duration-100 ease-in-out">
+                            <span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+                            @userName (@role)
+                        </div>
+                    </li>
+                    <li>
+                        <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all duration-100 ease-in-out text-error" asp-controller="Auth" asp-action="Logout">
+                            <span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    }
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0 bg-[#F0F7FF]">
+        @if (!string.IsNullOrEmpty(role))
+        {
+            <!-- TopNavBar (Responsive adaptation) -->
+            <header class="flex justify-between items-center px-gutter py-unit h-14 w-full bg-surface dark:bg-inverse-surface text-primary dark:text-primary-fixed font-body-base text-body-base border-b border-outline-variant dark:border-outline docked full-width top-0 z-10 shrink-0 md:hidden">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary cursor-pointer" data-icon="menu">menu</span>
+                    <span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">H2BIG</span>
+                </div>
+            </header>
+        }
+
+        <!-- Page Canvas -->
+        <main class="flex-1 overflow-y-auto p-container-padding flex flex-col gap-stack-md">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - H2BIG - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

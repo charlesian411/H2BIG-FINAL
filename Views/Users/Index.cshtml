@@ -1,0 +1,178 @@
+@model System.Data.DataTable
+@{
+    ViewData["Title"] = "Employee Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="flex justify-between items-end border-b border-outline-variant pb-stack-sm mb-stack-md">
+    <div>
+        <h1 class="font-display-lg text-display-lg text-on-background uppercase tracking-tight">Employee Management</h1>
+        <p class="font-body-base text-body-base text-on-surface-variant mt-1">Control system access, roles, and permissions.</p>
+    </div>
+    <div class="flex gap-2">
+        <button onclick="openAddModal()" class="bg-primary border border-primary font-label-bold text-label-bold text-on-primary px-4 py-2 rounded hover:bg-primary-container transition-colors flex items-center gap-2 shadow-sm active:translate-y-[1px]">
+            <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span>
+            Add New User
+        </button>
+    </div>
+</div>
+
+<!-- Functional Workspace -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+    <!-- Toolbar -->
+    <div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface">
+        <form asp-action="Index" method="get" class="flex items-center gap-2">
+            <div class="relative w-72">
+                <span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline" style="font-size: 18px;">search</span>
+                <input name="search" value="@ViewContext.HttpContext.Request.Query["search"]" class="w-full bg-surface-container-lowest border border-outline rounded pl-8 pr-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Filter by Name or Username..." type="text">
+            </div>
+            <button type="submit" class="bg-surface border border-outline-variant px-3 py-1.5 rounded text-body-sm hover:bg-surface-container transition-colors">Filter</button>
+        </form>
+    </div>
+
+    <!-- Data Grid -->
+    <div class="flex-1 overflow-auto">
+        <table class="w-full text-left border-collapse min-w-[800px]">
+            <thead class="sticky top-0 bg-surface border-b border-outline z-10">
+                <tr>
+                    <th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant w-24 text-center">ID</th>
+                    <th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant text-center">Full Name</th>
+                    <th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant text-center">Username</th>
+                    <th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant w-32 text-center">Role</th>
+                    <th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant w-24 text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="font-code-data text-code-data text-on-surface">
+                @foreach (System.Data.DataRow row in Model.Rows)
+                {
+                    <tr class="border-b border-outline-variant hover:bg-[#F0F7FF] group transition-colors">
+                        <td class="py-2 px-3 text-on-surface-variant text-center">USR-@row["id"]</td>
+                        <td class="py-2 px-3 font-body-sm text-body-sm font-medium text-center">@row["fullname"]</td>
+                        <td class="py-2 px-3 text-center">@row["username"]</td>
+                        <td class="py-2 px-3 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold @(row["role"].ToString() == "Admin" ? "bg-primary-container text-on-primary-container" : "bg-surface-container-highest text-on-surface")">@row["role"]</span>
+                        </td>
+                        <td class="py-2 px-3 text-center">
+                            <div class="flex gap-1 justify-center">
+                                <button onclick="openEditModal(@row["id"], '@row["fullname"]', '@row["username"]', '@row["role"]')" class="text-primary hover:bg-primary-container p-1 rounded transition-colors" title="Edit">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                                </button>
+                                <button onclick="openDeleteModal(@row["id"], '@row["fullname"]')" class="text-error hover:bg-error-container p-1 rounded transition-colors" title="Delete">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" class="hidden fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="bg-surface p-container-padding rounded-xl shadow-2xl w-full max-w-md border border-outline-variant animate-in fade-in zoom-in duration-200">
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+            <h3 class="font-headline-md text-primary font-bold">Add New Employee</h3>
+            <button onclick="closeAddModal()" class="text-outline hover:text-error"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form asp-action="Create" method="post" class="space-y-4">
+            <div>
+                <label class="block font-label-bold mb-1">Full Name</label>
+                <input type="text" name="fullname" required class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+                <label class="block font-label-bold mb-1">Username</label>
+                <input type="text" name="username" required class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+                <label class="block font-label-bold mb-1">Password</label>
+                <input type="password" name="password" required class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+                <label class="block font-label-bold mb-1">Role</label>
+                <select name="role" class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary">
+                    <option value="Admin">Admin</option>
+                    <option value="Staff">Staff</option>
+                    <option value="Rider">Rider</option>
+                </select>
+            </div>
+            <div class="pt-4 flex gap-2">
+                <button type="button" onclick="closeAddModal()" class="flex-1 px-4 py-2 border rounded font-label-bold hover:bg-surface-container">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-on-primary rounded font-label-bold hover:bg-primary-container">Save User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="hidden fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="bg-surface p-container-padding rounded-xl shadow-2xl w-full max-w-md border border-outline-variant animate-in fade-in zoom-in duration-200">
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+            <h3 class="font-headline-md text-primary font-bold">Edit Employee</h3>
+            <button onclick="closeEditModal()" class="text-outline hover:text-error"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form asp-action="Edit" method="post" class="space-y-4">
+            <input type="hidden" name="id" id="editId" />
+            <div>
+                <label class="block font-label-bold mb-1">Full Name</label>
+                <input type="text" name="fullname" id="editFullname" required class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+                <label class="block font-label-bold mb-1">Username</label>
+                <input type="text" name="username" id="editUsername" required class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+                <label class="block font-label-bold mb-1">Role</label>
+                <select name="role" id="editRole" class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary">
+                    <option value="Admin">Admin</option>
+                    <option value="Staff">Staff</option>
+                    <option value="Rider">Rider</option>
+                </select>
+            </div>
+            <div class="pt-4 flex gap-2">
+                <button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2 border rounded font-label-bold hover:bg-surface-container">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-on-primary rounded font-label-bold hover:bg-primary-container">Update User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="bg-surface p-container-padding rounded-xl shadow-2xl w-full max-w-sm border border-outline-variant animate-in fade-in zoom-in duration-200 text-center">
+        <div class="w-16 h-16 bg-error-container text-error rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-4xl">warning</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface font-bold mb-2">Delete User?</h3>
+        <p class="text-on-surface-variant font-body-sm mb-6">Are you sure you want to delete <span id="deleteName" class="font-bold text-on-surface"></span>? This action cannot be undone.</p>
+        
+        <form asp-action="Delete" method="post" class="flex gap-2">
+            <input type="hidden" name="id" id="deleteId" />
+            <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2 border border-outline-variant rounded font-label-bold hover:bg-surface-container transition-colors">Cancel</button>
+            <button type="submit" class="flex-1 px-4 py-2 bg-error text-on-error rounded font-label-bold hover:bg-[#93000a] transition-colors shadow-sm">Delete</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openAddModal() { document.getElementById('addModal').classList.remove('hidden'); }
+        function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+        function openEditModal(id, fullname, username, role) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editFullname').value = fullname;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editRole').value = role;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+        function openDeleteModal(id, name) {
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deleteName').innerText = name;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
+    </script>
+}

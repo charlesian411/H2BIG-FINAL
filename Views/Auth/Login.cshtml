@@ -1,0 +1,180 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html class="h-full" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - H2BIG Water Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    
+    <style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            display: inline-block;
+            white-space: nowrap;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#d6e3ff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9d9",
+                        "surface-tint": "#005db5",
+                        "surface-container-low": "#f6f3f2",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e2e2e2",
+                        "error": "#ba1a1a",
+                        "surface": "#fbf9f8",
+                        "on-primary-fixed-variant": "#00468b",
+                        "secondary-container": "#dfe0e0",
+                        "inverse-primary": "#a8c8ff",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container": "#f0eded",
+                        "outline-variant": "#c2c6d4",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "tertiary-fixed": "#dce3eb",
+                        "tertiary": "#424950",
+                        "outline": "#727783",
+                        "on-secondary-container": "#616363",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e4e2e1",
+                        "on-surface-variant": "#424752",
+                        "on-tertiary-container": "#d5dce4",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-background": "#1b1c1c",
+                        "tertiary-container": "#596167",
+                        "on-tertiary-fixed": "#151c22",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#00488d",
+                        "on-tertiary-fixed-variant": "#40484e",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed": "#001b3d",
+                        "background": "#fbf9f8",
+                        "primary-container": "#005fb8",
+                        "tertiary-fixed-dim": "#c0c7cf",
+                        "inverse-surface": "#303030",
+                        "on-primary-container": "#cadcff",
+                        "on-surface": "#1b1c1c",
+                        "secondary": "#5d5f5f"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "gutter": "16px",
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "container-padding": "24px"
+                    },
+                    fontFamily: {
+                        "body-base": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "code-data": ["Inter"],
+                        "label-bold": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-surface text-on-surface font-body-base text-body-base flex items-center justify-center relative overflow-hidden">
+    <!-- Decorative Background Elements -->
+    <div class="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-fixed blur-[120px]"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-primary blur-[150px] opacity-30"></div>
+    </div>
+    
+    <!-- Login Container -->
+    <div class="relative z-10 w-full max-w-[420px] px-gutter">
+        <!-- Branding Area -->
+        <div class="text-center mb-stack-lg">
+            <h1 class="font-display-lg text-display-lg text-primary mb-unit">H2BIG</h1>
+            <p class="font-body-base text-body-base text-on-surface-variant">System Authorization Required</p>
+        </div>
+        
+        <!-- Login Card -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-container-padding shadow-sm">
+            <form asp-controller="Auth" asp-action="Login" method="POST" class="space-y-stack-md">
+                
+                @if (ViewBag.Error != null)
+                {
+                    <div class="bg-error-container text-on-error-container border border-error px-4 py-2 rounded-DEFAULT mb-4 font-label-bold">
+                        @ViewBag.Error
+                    </div>
+                }
+
+                <!-- Security Notice -->
+                <div class="flex items-center gap-unit bg-primary-fixed p-stack-sm rounded border border-primary-fixed-dim">
+                    <span class="material-symbols-outlined text-primary text-[18px]">lock</span>
+                    <p class="font-code-data text-code-data text-primary">Secure Portal. Authorized personnel only.</p>
+                </div>
+                
+                <!-- Username Field -->
+                <div>
+                    <label class="block font-label-bold text-label-bold text-on-surface-variant mb-unit" for="username">Operator ID</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-stack-sm flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-outline text-[18px]">person</span>
+                        </div>
+                        <input class="block w-full pl-stack-lg pr-stack-sm py-stack-sm bg-surface-container-lowest border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary font-code-data text-code-data text-on-surface placeholder-outline" id="username" name="username" placeholder="Enter Operator ID" type="text" required />
+                    </div>
+                </div>
+                
+                <!-- Password Field -->
+                <div>
+                    <div class="flex justify-between items-center mb-unit">
+                        <label class="block font-label-bold text-label-bold text-on-surface-variant" for="password">Access Code</label>
+                        <a class="font-label-bold text-label-bold text-primary hover:text-primary-container transition-colors" href="#">Recover Access</a>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-stack-sm flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-outline text-[18px]">key</span>
+                        </div>
+                        <input class="block w-full pl-stack-lg pr-stack-sm py-stack-sm bg-surface-container-lowest border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary font-code-data text-code-data text-on-surface placeholder-outline" id="password" name="password" placeholder="••••••••" type="password" required />
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="w-full flex justify-center items-center gap-unit bg-primary-container text-on-primary-container py-stack-sm px-stack-md rounded border border-transparent hover:bg-primary transition-colors font-label-bold text-label-bold mt-stack-lg shadow-[inset_0_-2px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-[1px]">
+                    Authenticate
+                    <span class="material-symbols-outlined text-[16px]">login</span>
+                </button>
+            </form>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="mt-stack-md text-center">
+            <p class="font-body-sm text-body-sm text-outline">H2BIG Ledger v2.1.4 • Connection: Secure</p>
+            <p class="font-body-sm text-body-sm text-outline mt-unit">Hydraulics Management Protocol</p>
+        </div>
+    </div>
+</body>
+</html>

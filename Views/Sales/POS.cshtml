@@ -1,0 +1,268 @@
+@{
+    ViewData["Title"] = "POS / Sales";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var products = ViewBag.Products as System.Data.DataTable;
+    var customers = ViewBag.Customers as System.Data.DataTable;
+}
+
+<style>
+    .win-border { border: 1px solid #727783; }
+    .win-panel { background-color: #FFFFFF; border: 1px solid #c2c6d4; }
+</style>
+
+<div class="flex-1 flex gap-gutter overflow-hidden h-full">
+    <!-- Left Side: Product Selection -->
+    <section class="flex-1 flex flex-col gap-stack-md h-full overflow-hidden">
+        <!-- Customer Context Bar -->
+        <div class="win-panel p-stack-sm flex items-center justify-between shadow-sm rounded-xl">
+            <div class="flex items-center w-full gap-stack-md justify-between">
+                <div class="flex w-full items-center gap-stack-md">
+                    <!-- Toggle Tabs -->
+                    <div class="flex items-center gap-[2px] p-[2px] bg-surface-container-low win-border rounded shrink-0">
+                        <button type="button" onclick="setOrderType('Walk-In')" id="tabWalkIn" class="px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all">Walk-in</button>
+                        <button type="button" onclick="setOrderType('Delivery')" id="tabDelivery" class="px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all">Delivery</button>
+                    </div>
+                    <!-- Customer Search -->
+                    <div class="flex-1 flex win-border rounded bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden">
+                        <div class="relative flex-1 flex items-center">
+                            <span class="material-symbols-outlined absolute left-2 text-outline text-[18px]">person_search</span>
+                            <select id="customerSelect" onchange="updateCustomerContext()" class="w-full pl-8 pr-unit py-1.5 text-body-base font-body-base border-none outline-none focus:ring-0 bg-transparent">
+                                <option value="0">-- Guest Walk-In --</option>
+                                @if (customers != null)
+                                {
+                                    foreach (System.Data.DataRow row in customers.Rows)
+                                    {
+                                        <option value="@row["id"]" data-name="@row["name"]">@row["name"]</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="flex-1 overflow-y-auto win-panel p-stack-md shadow-sm rounded-xl">
+            <div class="flex items-center justify-between mb-stack-md border-b border-outline-variant pb-unit">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Products</h2>
+                <div class="relative w-64">
+                    <span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+                    <input type="text" onkeyup="filterProducts(this.value)" placeholder="Search products..." class="w-full pl-8 pr-3 py-1 border border-outline-variant rounded-full text-body-sm focus:ring-1 focus:ring-primary outline-none" />
+                </div>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-stack-md" id="productGrid">
+                @if (products != null)
+                {
+                    foreach (System.Data.DataRow row in products.Rows)
+                    {
+                        var productId = row["id"];
+                        var name = row["name"].ToString();
+                        var price = Convert.ToDecimal(row["price"]);
+                        var stock = Convert.ToInt32(row["stock"]);
+                        
+                        <div class="product-card border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full @(stock <= 0 ? "opacity-50 pointer-events-none" : "")" 
+                             data-name="@name.ToLower()"
+                             onclick="addToCart(@productId, '@name', @price, @stock)">
+                            <div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start rounded-t">
+                                <span class="material-symbols-outlined text-primary text-[28px]">water_bottle</span>
+                                <span class="@(stock > 50 ? "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]" : stock > 0 ? "bg-[#FFF8E1] text-[#F57F17] border-[#FFE082]" : "bg-[#FCE8E6] text-[#C5221F] border-[#F9D0C4]") px-2 py-[2px] rounded text-[10px] font-bold border">Stock: @stock</span>
+                            </div>
+                            <div class="p-stack-sm flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 class="font-label-bold text-label-bold text-on-surface">@name</h3>
+                                    <p class="font-code-data text-code-data text-on-surface-variant mt-1">₱@price.ToString("0.00")</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Right Side: Order Summary -->
+    <aside class="w-96 flex flex-col h-full win-panel shadow-md rounded-xl overflow-hidden">
+        <form asp-action="Process" method="post" id="posForm" class="flex flex-col h-full">
+            <input type="hidden" name="type" id="orderTypeInput" value="Walk-In" />
+            <input type="hidden" name="customerId" id="customerIdInput" value="0" />
+            <input type="hidden" name="totalAmount" id="totalAmountInput" value="0" />
+            <input type="hidden" name="cartJson" id="cartJsonInput" value="[]" />
+
+            <div class="p-stack-md border-b border-outline-variant bg-surface-container-low">
+                <h2 class="font-headline-md text-headline-md text-on-surface flex items-center justify-between">
+                    Order Summary
+                    <span class="font-label-bold text-label-bold bg-primary-container text-on-primary-container px-2 py-1 rounded">Ticket #@DateTime.Now.ToString("HHmm")</span>
+                </h2>
+                <div class="mt-2 flex items-center text-on-surface-variant font-body-sm text-body-sm gap-unit">
+                    <span class="material-symbols-outlined text-[16px]">person</span>
+                    <span id="displayCustomerName">Guest (Walk-in)</span>
+                </div>
+            </div>
+
+            <!-- Cart Items -->
+            <div id="cartItems" class="flex-1 overflow-y-auto p-stack-sm bg-surface-container-lowest">
+                <div class="h-full flex items-center justify-center text-outline opacity-50 flex-col gap-2">
+                    <span class="material-symbols-outlined text-4xl">shopping_cart</span>
+                    <p class="font-body-sm">Cart is empty</p>
+                </div>
+            </div>
+
+            <!-- Totals & Action -->
+            <div class="p-stack-md border-t border-outline-variant bg-surface-container-low">
+                <div class="flex justify-between items-center mb-unit font-body-base text-body-base text-on-surface-variant">
+                    <span class="">Subtotal</span>
+                    <span class="font-code-data text-code-data" id="displaySubtotal">₱0.00</span>
+                </div>
+                <div class="flex justify-between items-center mb-stack-sm font-body-base text-body-base text-on-surface-variant">
+                    <span class="">Tax (0%)</span>
+                    <span class="font-code-data text-code-data" id="displayTax">₱0.00</span>
+                </div>
+                <div class="flex justify-between items-center mb-stack-md font-headline-md text-headline-md text-on-surface border-t border-outline-variant pt-unit">
+                    <span class="">Total</span>
+                    <span class="font-code-data text-code-data text-primary" id="cartTotal">₱0.00</span>
+                </div>
+                
+                <button type="submit" id="submitBtn" disabled class="w-full bg-primary disabled:bg-outline-variant hover:bg-primary-container text-on-primary font-headline-md text-headline-md py-stack-sm rounded shadow flex items-center justify-center gap-stack-sm transition-colors uppercase tracking-wider">
+                    <span class="material-symbols-outlined">payments</span>
+                    Process Sale
+                </button>
+            </div>
+        </form>
+    </aside>
+</div>
+
+@section Scripts {
+    <script>
+        let cart = {};
+        let currentOrderType = "Walk-In";
+
+        function setOrderType(type) {
+            currentOrderType = type;
+            document.getElementById('orderTypeInput').value = type;
+            
+            // UI Update
+            const wBtn = document.getElementById('tabWalkIn');
+            const dBtn = document.getElementById('tabDelivery');
+            
+            if(type === 'Walk-In') {
+                wBtn.className = "px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all";
+                dBtn.className = "px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all";
+            } else {
+                dBtn.className = "px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all";
+                wBtn.className = "px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all";
+            }
+            updateCustomerContext();
+        }
+
+        function updateCustomerContext() {
+            const select = document.getElementById('customerSelect');
+            const customerId = select.value;
+            const customerName = select.options[select.selectedIndex].getAttribute('data-name') || "Guest (Walk-in)";
+            
+            document.getElementById('customerIdInput').value = customerId;
+            document.getElementById('displayCustomerName').innerText = currentOrderType === 'Delivery' ? customerName : (customerId == "0" ? "Guest (Walk-in)" : customerName);
+            
+            validateOrder();
+        }
+
+        function filterProducts(query) {
+            const products = document.querySelectorAll('.product-card');
+            query = query.toLowerCase();
+            products.forEach(p => {
+                const name = p.getAttribute('data-name');
+                p.style.display = name.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function addToCart(id, name, price, stock) {
+            if (cart[id]) {
+                if (cart[id].qty < stock) cart[id].qty++;
+            } else {
+                cart[id] = { id, name, price, qty: 1 };
+            }
+            renderCart();
+        }
+
+        function updateQty(id, delta) {
+            if (!cart[id]) return;
+            cart[id].qty += delta;
+            if (cart[id].qty <= 0) delete cart[id];
+            renderCart();
+        }
+
+        function removeItem(id) {
+            delete cart[id];
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            const subtotalEl = document.getElementById('displaySubtotal');
+            const totalEl = document.getElementById('cartTotal');
+            const totalInput = document.getElementById('totalAmountInput');
+            const jsonInput = document.getElementById('cartJsonInput');
+
+            if (Object.keys(cart).length === 0) {
+                container.innerHTML = `<div class="h-full flex items-center justify-center text-outline opacity-50 flex-col gap-2">
+                    <span class="material-symbols-outlined text-4xl">shopping_cart</span>
+                    <p class="font-body-sm">Cart is empty</p>
+                </div>`;
+                subtotalEl.innerText = "₱0.00";
+                totalEl.innerText = "₱0.00";
+                totalInput.value = "0";
+                validateOrder();
+                return;
+            }
+
+            container.innerHTML = '';
+            let total = 0;
+            const itemsList = [];
+
+            for (const id in cart) {
+                const item = cart[id];
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                itemsList.push({ ProductId: item.id, Quantity: item.qty });
+
+                container.innerHTML += `
+                    <div class="flex items-center justify-between border-b border-outline-variant py-stack-sm animate-in fade-in slide-in-from-right-2 duration-200">
+                        <div class="flex-1">
+                            <h4 class="font-label-bold text-label-bold text-on-surface">${item.name}</h4>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant">₱${item.price.toFixed(2)} / ea</p>
+                        </div>
+                        <div class="flex items-center gap-stack-sm">
+                            <div class="flex items-center win-border rounded bg-surface">
+                                <button type="button" onclick="updateQty(${id}, -1)" class="px-2 py-1 hover:bg-surface-variant text-outline border-r border-outline-variant transition-colors"><span class="material-symbols-outlined text-[16px] block">remove</span></button>
+                                <span class="w-8 text-center font-code-data text-code-data">${item.qty}</span>
+                                <button type="button" onclick="updateQty(${id}, 1)" class="px-2 py-1 hover:bg-surface-variant text-outline border-l border-outline-variant transition-colors"><span class="material-symbols-outlined text-[16px] block">add</span></button>
+                            </div>
+                            <span class="font-code-data text-code-data w-16 text-right">₱${subtotal.toFixed(2)}</span>
+                            <button type="button" onclick="removeItem(${id})" class="text-error hover:bg-error-container p-1 rounded transition-colors ml-1"><span class="material-symbols-outlined text-[18px] block">delete</span></button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            subtotalEl.innerText = `₱${total.toFixed(2)}`;
+            totalEl.innerText = `₱${total.toFixed(2)}`;
+            totalInput.value = total;
+            jsonInput.value = JSON.stringify(itemsList);
+            validateOrder();
+        }
+
+        function validateOrder() {
+            const customerId = document.getElementById('customerIdInput').value;
+            const total = parseFloat(document.getElementById('totalAmountInput').value);
+            const submitBtn = document.getElementById('submitBtn');
+            
+            let isValid = total > 0;
+            if (currentOrderType === 'Delivery' && customerId === "0") {
+                isValid = false;
+            }
+            
+            submitBtn.disabled = !isValid;
+        }
+    </script>
+}

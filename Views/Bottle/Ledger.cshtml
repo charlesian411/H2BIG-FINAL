@@ -1,0 +1,97 @@
+@model IEnumerable<H2BIG.Models.BottleLedger>
+@{
+    ViewData["Title"] = "Bottle Ledger";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var customer = ViewBag.Customer as System.Data.DataRow;
+}
+
+<!-- Context Header & Global Filter -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-stack-md bg-surface p-stack-md border border-outline-variant rounded-DEFAULT shadow-sm mb-stack-md">
+    <div>
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-1">Bottle Ledger Tracking</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Verify customer container history and manage bottle debt.</p>
+    </div>
+    <div class="w-full md:w-96 relative">
+        <form asp-action="Ledger" method="get" class="relative flex gap-2">
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-symbols-outlined text-outline text-sm" data-icon="search">search</span>
+                </div>
+                <input name="customerId" class="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded-DEFAULT leading-5 bg-surface-lowest text-on-surface placeholder-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body-sm text-body-sm transition-all" placeholder="Enter Customer ID..." type="number" required />
+            </div>
+            <button type="submit" class="bg-primary text-on-primary px-4 rounded hover:bg-primary-container font-label-bold">View Ledger</button>
+        </form>
+    </div>
+</div>
+
+@if (customer != null)
+{
+    <!-- Customer Summary Card -->
+    <div class="bg-surface border border-outline-variant rounded-DEFAULT shadow-sm p-stack-md grid grid-cols-1 md:grid-cols-4 gap-stack-md items-center mb-stack-md">
+        <div class="flex items-center gap-3 md:col-span-1 flex-col text-center">
+            <div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-primary border border-outline-variant">
+                <span class="material-symbols-outlined text-2xl" data-icon="business">business</span>
+            </div>
+            <div>
+                <h3 class="font-code-data text-code-data text-on-surface">CUST-@customer["id"]</h3>
+                <p class="font-label-bold text-label-bold text-primary">@customer["name"]</p>
+            </div>
+        </div>
+        <div class="md:col-span-3 grid grid-cols-3 gap-4 border-l border-outline-variant pl-stack-md items-center">
+            <div class="text-center">
+                <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Total Bottles Out</p>
+                <p class="font-code-data text-code-data text-on-surface">@Model.Sum(x => x.BottlesOut)</p>
+            </div>
+            <div class="text-center">
+                <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Total Bottles Returned</p>
+                <p class="font-code-data text-code-data text-on-surface">@Model.Sum(x => x.BottlesIn)</p>
+            </div>
+            <div class="bg-error-container border border-error px-3 py-2 rounded-DEFAULT flex items-center text-center flex-col justify-center">
+                <div class="text-center">
+                    <p class="font-label-bold text-label-bold text-on-error-container uppercase tracking-wider mb-1">Current Bottle Debt</p>
+                    <p class="font-headline-md text-headline-md text-on-error-container font-black">@customer["bottle_debt"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ledger Data Grid -->
+    <div class="bg-surface border border-outline-variant rounded-DEFAULT shadow-sm flex-1 flex flex-col overflow-hidden">
+        <div class="flex justify-between items-center p-3 border-b border-outline-variant bg-surface-container-low">
+            <h3 class="font-label-bold text-label-bold text-on-surface">Transaction Ledger</h3>
+        </div>
+        <div class="flex-1 overflow-auto">
+            <table class="min-w-full w-full text-left border-collapse">
+                <thead class="bg-surface-container sticky top-0 z-10 border-b border-outline-variant">
+                    <tr>
+                        <th class="px-3 py-2 font-label-bold text-label-bold text-tertiary whitespace-nowrap border-r border-outline-variant">Date & Time</th>
+                        <th class="px-3 py-2 font-label-bold text-label-bold text-tertiary whitespace-nowrap border-r border-outline-variant">Transaction ID</th>
+                        <th class="px-3 py-2 font-label-bold text-label-bold text-tertiary whitespace-nowrap text-right border-r border-outline-variant">Bottles Out</th>
+                        <th class="px-3 py-2 font-label-bold text-label-bold text-tertiary whitespace-nowrap text-right border-r border-outline-variant">Bottles In</th>
+                        <th class="px-3 py-2 font-label-bold text-label-bold text-tertiary whitespace-nowrap text-right bg-surface-container-high border-l border-r border-outline-variant">Balance After</th>
+                    </tr>
+                </thead>
+                <tbody class="font-code-data text-code-data text-on-surface divide-y divide-outline-variant bg-surface">
+                    @foreach (var entry in Model)
+                    {
+                        <tr class="hover:bg-surface-container-lowest transition-colors">
+                            <td class="px-3 py-2 whitespace-nowrap text-center border-r border-outline-variant">@entry.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-primary text-center border-r border-outline-variant">TX-@entry.TransactionId</td>
+                            <td class="px-3 py-2 whitespace-nowrap @(entry.BottlesOut > 0 ? "text-error font-semibold" : "text-outline") text-center border-r border-outline-variant">+ @entry.BottlesOut</td>
+                            <td class="px-3 py-2 whitespace-nowrap @(entry.BottlesIn > 0 ? "text-primary-container" : "text-outline") text-center border-r border-outline-variant">- @entry.BottlesIn</td>
+                            <td class="px-3 py-2 whitespace-nowrap bg-surface-container-low border-l border-r border-outline-variant font-black text-error text-center">@entry.Balance</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="bg-surface-container-lowest border border-outline-variant p-stack-lg rounded text-center text-on-surface-variant">
+        <span class="material-symbols-outlined text-4xl mb-2 text-outline">search</span>
+        <p>Search for a Customer ID to view their transaction history and bottle ledger.</p>
+    </div>
+}

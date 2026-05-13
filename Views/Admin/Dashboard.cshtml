@@ -1,0 +1,177 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var topDebtors = ViewBag.TopDebtors as System.Data.DataTable;
+    var recentTransactions = ViewBag.RecentTransactions as System.Data.DataTable;
+}
+
+<!-- Page Header -->
+<div class="flex items-end justify-between">
+    <div>
+        <h1 class="font-headline-md text-headline-md font-bold text-on-surface uppercase tracking-tight">Dashboard</h1>
+        <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Live telemetry for water delivery and asset management.</p>
+    </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mt-stack-md">
+    <!-- Total Revenue -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+        <div class="flex justify-between items-start">
+            <span class="font-label-bold text-label-bold text-on-surface-variant">Total Revenue (Today)</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">account_balance</span>
+        </div>
+        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">₱@ViewBag.SalesToday</div>
+        <div class="flex items-center gap-unit text-body-sm font-body-sm text-[#10b981] mt-unit">
+            <span class="material-symbols-outlined text-[16px]">trending_up</span>
+            <span class="">Live data</span>
+        </div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+    </div>
+
+    <!-- Active Orders -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+        <div class="flex justify-between items-start">
+            <span class="font-label-bold text-label-bold text-on-surface-variant">Active Deliveries</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">local_shipping</span>
+        </div>
+        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">@ViewBag.PendingDeliveries</div>
+        <div class="flex items-center gap-unit text-body-sm font-body-sm text-on-surface-variant mt-unit">
+            <span class="material-symbols-outlined text-[16px]">schedule</span>
+            <span class="">Pending dispatch</span>
+        </div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+    </div>
+
+    <!-- Outstanding Bottle Debt (Alert State) -->
+    <div class="bg-surface-container-lowest border border-error rounded p-stack-md flex flex-col gap-unit relative overflow-hidden group">
+        <div class="absolute inset-0 bg-error-container opacity-20 pointer-events-none"></div>
+        <div class="flex justify-between items-start relative z-10">
+            <span class="font-label-bold text-label-bold text-on-error-container flex items-center gap-unit">
+                <span class="material-symbols-outlined text-[16px]">warning</span>
+                Outstanding Bottle Debt
+            </span>
+            <span class="material-symbols-outlined text-error text-[20px]">water_bottle</span>
+        </div>
+        <div class="font-display-lg text-display-lg text-on-error-container mt-stack-sm relative z-10">
+            @ViewBag.TotalDebt <span class="text-body-base font-body-base text-error ml-unit">units</span>
+        </div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-error"></div>
+    </div>
+
+    <!-- Monthly Profit (Simulated for Design) -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+        <div class="flex justify-between items-start">
+            <span class="font-label-bold text-label-bold text-on-surface-variant">Monthly Profit (Est)</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">monitoring</span>
+        </div>
+        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">₱@((decimal)ViewBag.SalesToday * 0.4m)</div>
+        <div class="flex items-center gap-unit text-body-sm font-body-sm text-[#10b981] mt-unit">
+            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+            <span class="">On target</span>
+        </div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+    </div>
+</div>
+
+<!-- Main Data Canvas -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-stack-lg">
+    <!-- Sales Trends Chart -->
+    <div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded flex flex-col h-[350px]">
+        <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
+                <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+                Sales Trends (Last 7 Days)
+            </h2>
+        </div>
+        <div class="flex-1 p-stack-md flex items-end gap-2 relative">
+            <!-- Simulated Bars -->
+            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[40%] rounded-t-sm"></div>
+            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[60%] rounded-t-sm"></div>
+            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[30%] rounded-t-sm"></div>
+            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[80%] rounded-t-sm"></div>
+            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[50%] rounded-t-sm"></div>
+            <div class="flex-1 bg-primary-container hover:bg-primary transition-colors h-[95%] rounded-t-sm relative">
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-surface-container-highest text-on-surface text-[10px] font-label-bold px-1 rounded whitespace-nowrap">Peak</div>
+            </div>
+            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[45%] rounded-t-sm"></div>
+        </div>
+    </div>
+
+    <!-- Urgent Debt Alerts List -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col h-[350px]">
+        <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
+                <span class="material-symbols-outlined text-[18px] text-error">assignment_late</span>
+                Urgent Debt Alerts
+            </h2>
+            <a asp-controller="Bottle" asp-action="Ledger" class="text-primary font-label-bold text-label-bold text-[11px] hover:underline">View All</a>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+            <table class="w-full text-left border-collapse font-code-data text-code-data">
+                <thead class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant">
+                    <tr>
+                        <th class="py-unit px-stack-sm font-label-bold text-on-surface-variant">Customer</th>
+                        <th class="py-unit px-stack-sm font-label-bold text-on-surface-variant text-right">Qty</th>
+                        <th class="py-unit px-stack-sm font-label-bold text-on-surface-variant text-right">Act</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (topDebtors != null)
+                    {
+                        foreach (System.Data.DataRow row in topDebtors.Rows)
+                        {
+                            <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+                                <td class="py-stack-sm px-stack-sm text-on-surface">@row["name"]</td>
+                                <td class="py-stack-sm px-stack-sm text-error font-bold text-right">@row["bottle_debt"]</td>
+                                <td class="py-stack-sm px-stack-sm text-right">
+                                    <a href="tel:@row["contact"]" class="text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">call</span></a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Data Canvas (Recent Transactions) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col mt-stack-lg">
+    <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+        <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
+            <span class="material-symbols-outlined text-[18px]">history</span>
+            Recent Sales Transactions
+        </h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse font-code-data text-code-data whitespace-nowrap">
+            <thead class="bg-surface-container-lowest border-b border-outline-variant">
+                <tr>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">ID</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Timestamp</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Customer</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Amount</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (recentTransactions != null)
+                {
+                    foreach (System.Data.DataRow row in recentTransactions.Rows)
+                    {
+                        <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+                            <td class="py-stack-sm px-stack-md text-primary font-bold">#@row["id"]</td>
+                            <td class="py-stack-sm px-stack-md text-on-surface-variant">@Convert.ToDateTime(row["date_time"]).ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="py-stack-sm px-stack-md text-on-surface">@row["CustomerName"]</td>
+                            <td class="py-stack-sm px-stack-md font-bold text-primary">₱@row["total_amount"]</td>
+                            <td class="py-stack-sm px-stack-md">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold @(row["type"].ToString() == "Walk-In" ? "bg-[#E8F5E9] text-[#2E7D32]" : "bg-[#F0F7FF] text-primary")">@row["type"]</span>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

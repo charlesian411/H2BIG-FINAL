@@ -116,7 +116,7 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 
 ---
 
-### Phase 1 — Database Design (XAMPP/phpMyAdmin) 🗄️ [PENDING]
+### Phase 1 — Database Design (XAMPP/phpMyAdmin) ✅ [COMPLETED]
 **Goal:** Design and create all MySQL tables, relationships, and seed data in your local XAMPP.
 
 **Deliverables:**
@@ -135,7 +135,7 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 
 ---
 
-### Phase 2 — Backend Development 🔧 [PENDING]
+### Phase 2 — Backend Development 🔧 ✅ [COMPLETED]
 1.  **Auth Module:** Implement role-based redirection and role-aware Session logic.
 2.  **Customer Management Logic (Admin & Staff):**
     - Search logic by Customer Name.

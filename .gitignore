@@ -1,16 +1,32 @@
-/.agents
-/Stitch-Final-Design
-/H2BIG_FLOW.md
-
-# .NET / Visual Studio Ignores
+# .NET Core
 [Bb]in/
 [Oo]bj/
 out/
-.vscode/
+publish/
+
+# Visual Studio / VS Code
 .vs/
+.vscode/
 *.user
 *.userosscache
 *.sln.docstates
 *.suo
+.DS_Store
+Thumbs.db
+
+# Configuration & Secrets
+.env
 appsettings.Development.json
-.DS_Store
+Properties/launchSettings.json
+
+# AI Assistant Context (Internal)
+.gemini/
+.agents/
+implementation_plan.md
+task.md
+walkthrough.md
+
+# Design Reference (Optional - Keep if you want it in GitHub)
+# /Stitch-Final-Design/
+
+# Note: H2BIG_FLOW.md is NOT ignored as it is core project documentation.

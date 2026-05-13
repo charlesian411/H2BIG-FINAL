@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Rider Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="flex items-end justify-between">
+    <div>
+        <h1 class="font-headline-md text-headline-md font-bold text-on-surface">RIDER DASHBOARD</h1>
+        <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Track your assigned deliveries today.</p>
+    </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-gutter mt-stack-md">
+    <!-- Deliveries to Make -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+        <div class="flex justify-between items-start">
+            <span class="font-label-bold text-label-bold text-on-surface-variant">Out for Delivery</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">local_shipping</span>
+        </div>
+        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">@ViewBag.DeliveriesToMake</div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-error scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+    </div>
+
+    <!-- Completed Deliveries -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+        <div class="flex justify-between items-start">
+            <span class="font-label-bold text-label-bold text-on-surface-variant">Completed Today</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">check_circle</span>
+        </div>
+        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">@ViewBag.CompletedDeliveries</div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+    </div>
+</div>
+
+<div class="mt-stack-lg">
+    <a asp-controller="Delivery" asp-action="Index" class="inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-DEFAULT font-label-bold hover:bg-primary-container transition-colors">
+        <span class="material-symbols-outlined text-[18px]">list_alt</span>
+        View Delivery Route
+    </a>
+</div>
