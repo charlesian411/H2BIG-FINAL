@@ -19,9 +19,9 @@ namespace H2BIG.Controllers
 
             // Fetch recent transactions for the bottom table
             ViewBag.RecentTransactions = _db.ExecuteQuery(@"
-                SELECT s.id, s.date_time, c.name as CustomerName, s.total_amount, s.type
+                SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
                 FROM sales s
-                JOIN customers c ON s.customer_id = c.id
+                LEFT JOIN customers c ON s.customer_id = c.id
                 ORDER BY s.date_time DESC
                 LIMIT 5");
 

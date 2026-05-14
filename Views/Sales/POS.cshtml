@@ -4,54 +4,60 @@
     
     var products = ViewBag.Products as System.Data.DataTable;
     var customers = ViewBag.Customers as System.Data.DataTable;
+    var riders = ViewBag.Riders as System.Data.DataTable;
 }
 
 <style>
     .win-border { border: 1px solid #727783; }
     .win-panel { background-color: #FFFFFF; border: 1px solid #c2c6d4; }
+    .product-card:hover { border-color: #00488d; }
 </style>
 
-<div class="flex-1 flex gap-gutter overflow-hidden h-full">
+<div class="flex-1 flex gap-gutter p-container-padding overflow-hidden h-full">
     <!-- Left Side: Product Selection -->
-    <section class="flex-1 flex flex-col gap-stack-md h-full overflow-hidden">
-        <!-- Customer Context Bar -->
-        <div class="win-panel p-stack-sm flex items-center justify-between shadow-sm rounded-xl">
-            <div class="flex items-center w-full gap-stack-md justify-between">
-                <div class="flex w-full items-center gap-stack-md">
-                    <!-- Toggle Tabs -->
-                    <div class="flex items-center gap-[2px] p-[2px] bg-surface-container-low win-border rounded shrink-0">
-                        <button type="button" onclick="setOrderType('Walk-In')" id="tabWalkIn" class="px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all">Walk-in</button>
-                        <button type="button" onclick="setOrderType('Delivery')" id="tabDelivery" class="px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all">Delivery</button>
-                    </div>
-                    <!-- Customer Search -->
-                    <div class="flex-1 flex win-border rounded bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden">
-                        <div class="relative flex-1 flex items-center">
-                            <span class="material-symbols-outlined absolute left-2 text-outline text-[18px]">person_search</span>
-                            <select id="customerSelect" onchange="updateCustomerContext()" class="w-full pl-8 pr-unit py-1.5 text-body-base font-body-base border-none outline-none focus:ring-0 bg-transparent">
-                                <option value="0">-- Guest Walk-In --</option>
-                                @if (customers != null)
+    <section class="flex-1 flex flex-col gap-stack-md h-full">
+        <!-- Customer Context Bar (Merged Action Bar) -->
+        <div class="win-panel p-stack-sm flex items-center justify-between shadow-sm relative z-[60]">
+            <div class="flex items-center w-full gap-stack-md">
+                <div class="flex items-center gap-[2px] p-[2px] bg-surface-container-low win-border rounded shrink-0">
+                    <button type="button" onclick="setOrderType('Walk-In')" id="tabWalkIn" class="px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all">Walk-in</button>
+                    <button type="button" onclick="setOrderType('Delivery')" id="tabDelivery" class="px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all">Delivery</button>
+                </div>
+                <div id="customerSearchContainer" class="flex-1 flex win-border rounded bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary relative hidden">
+                    <div class="relative flex-1 flex items-center">
+                        <span class="material-symbols-outlined absolute left-2 text-outline text-[18px]">person_search</span>
+                        <input type="text" id="customerSearchInput" onkeyup="searchCustomers(this.value)" placeholder="Search Customer Name..." class="w-full pl-8 pr-unit py-1.5 text-body-base font-body-base border-none outline-none focus:ring-0 bg-transparent" />
+                        <!-- Autocomplete Dropdown -->
+                        <div id="customerResults" class="absolute top-full left-0 w-full bg-surface-container-lowest border border-outline-variant shadow-lg rounded-b z-50 hidden max-h-60 overflow-y-auto">
+                            @if (customers != null)
+                            {
+                                foreach (System.Data.DataRow row in customers.Rows)
                                 {
-                                    foreach (System.Data.DataRow row in customers.Rows)
-                                    {
-                                        <option value="@row["id"]" data-name="@row["name"]">@row["name"]</option>
-                                    }
+                                    <div class="p-3 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant last:border-0 group customer-item" 
+                                         onclick="selectCustomer(@row["id"], '@row["name"]', '@row["address"]')">
+                                        <div class="font-label-bold text-on-surface group-hover:text-primary transition-colors customer-name">@row["name"]</div>
+                                        <div class="text-[10px] text-outline truncate flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[12px]">location_on</span> @row["address"]
+                                        </div>
+                                    </div>
                                 }
-                            </select>
+                            }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Product Grid -->
-        <div class="flex-1 overflow-y-auto win-panel p-stack-md shadow-sm rounded-xl">
+        <!-- Product Grid Container -->
+        <div class="flex-1 overflow-y-auto win-panel p-stack-md shadow-sm flex flex-col">
             <div class="flex items-center justify-between mb-stack-md border-b border-outline-variant pb-unit">
-                <h2 class="font-headline-md text-headline-md text-on-surface">Products</h2>
-                <div class="relative w-64">
-                    <span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-                    <input type="text" onkeyup="filterProducts(this.value)" placeholder="Search products..." class="w-full pl-8 pr-3 py-1 border border-outline-variant rounded-full text-body-sm focus:ring-1 focus:ring-primary outline-none" />
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">Products</h2>
+                <div class="relative w-72">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+                    <input type="text" onkeyup="filterProducts(this.value)" placeholder="Search products..." class="w-full pl-10 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-full font-body-sm text-body-sm focus:ring-1 focus:ring-primary outline-none transition-all" />
                 </div>
             </div>
+            
             <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-stack-md" id="productGrid">
                 @if (products != null)
                 {
@@ -62,17 +68,19 @@
                         var price = Convert.ToDecimal(row["price"]);
                         var stock = Convert.ToInt32(row["stock"]);
                         
-                        <div class="product-card border border-outline-variant hover:border-primary rounded bg-surface-container-lowest cursor-pointer group transition-colors flex flex-col h-full @(stock <= 0 ? "opacity-50 pointer-events-none" : "")" 
+                        <div class="product-card border border-outline-variant rounded bg-surface-container-lowest cursor-pointer group transition-all flex flex-col h-full active:scale-[0.98] @(stock <= 0 ? "opacity-50 pointer-events-none" : "")" 
                              data-name="@name.ToLower()"
                              onclick="addToCart(@productId, '@name', @price, @stock)">
+                            <!-- Card Header -->
                             <div class="p-stack-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-start rounded-t">
                                 <span class="material-symbols-outlined text-primary text-[28px]">water_bottle</span>
-                                <span class="@(stock > 50 ? "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]" : stock > 0 ? "bg-[#FFF8E1] text-[#F57F17] border-[#FFE082]" : "bg-[#FCE8E6] text-[#C5221F] border-[#F9D0C4]") px-2 py-[2px] rounded text-[10px] font-bold border">Stock: @stock</span>
+                                <span class="@(stock > 50 ? "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]" : stock > 0 ? "bg-[#FFF8E1] text-[#F57F17] border-[#FFE082]" : "bg-[#FCE8E6] text-[#C5221F] border-[#F9D0C4]") px-2 py-[2px] rounded text-[10px] font-bold border whitespace-nowrap">Stock: @stock</span>
                             </div>
-                            <div class="p-stack-sm flex-1 flex flex-col justify-between">
+                            <!-- Card Body -->
+                            <div class="p-stack-md flex-1 flex flex-col justify-between">
                                 <div>
-                                    <h3 class="font-label-bold text-label-bold text-on-surface">@name</h3>
-                                    <p class="font-code-data text-code-data text-on-surface-variant mt-1">₱@price.ToString("0.00")</p>
+                                    <h3 class="font-label-bold text-label-bold text-on-surface line-clamp-2 min-h-[32px]">@name</h3>
+                                    <p class="font-code-data text-code-data text-primary mt-unit">₱@price.ToString("0.00")</p>
                                 </div>
                             </div>
                         </div>
@@ -83,54 +91,110 @@
     </section>
 
     <!-- Right Side: Order Summary -->
-    <aside class="w-96 flex flex-col h-full win-panel shadow-md rounded-xl overflow-hidden">
-        <form asp-action="Process" method="post" id="posForm" class="flex flex-col h-full">
+    <aside class="w-96 flex flex-col h-full win-panel shadow-md overflow-hidden">
+        <form asp-action="Process" method="post" id="posForm" class="flex flex-col h-full" onsubmit="handleProcessSale(event)">
             <input type="hidden" name="type" id="orderTypeInput" value="Walk-In" />
             <input type="hidden" name="customerId" id="customerIdInput" value="0" />
+            <input type="hidden" name="riderId" id="riderIdInput" value="" />
             <input type="hidden" name="totalAmount" id="totalAmountInput" value="0" />
             <input type="hidden" name="cartJson" id="cartJsonInput" value="[]" />
 
+            <!-- Summary Header -->
             <div class="p-stack-md border-b border-outline-variant bg-surface-container-low">
-                <h2 class="font-headline-md text-headline-md text-on-surface flex items-center justify-between">
-                    Order Summary
-                    <span class="font-label-bold text-label-bold bg-primary-container text-on-primary-container px-2 py-1 rounded">Ticket #@DateTime.Now.ToString("HHmm")</span>
-                </h2>
-                <div class="mt-2 flex items-center text-on-surface-variant font-body-sm text-body-sm gap-unit">
-                    <span class="material-symbols-outlined text-[16px]">person</span>
-                    <span id="displayCustomerName">Guest (Walk-in)</span>
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Order Summary</h2>
+                    <span class="font-label-bold text-label-bold bg-primary text-on-primary px-3 py-1 rounded shadow-sm">Ticket #@DateTime.Now.ToString("HHmm")</span>
+                </div>
+                <div class="flex flex-col gap-2 bg-surface-container-lowest p-3 rounded border border-outline-variant">
+                    <div class="flex items-center text-on-surface font-label-bold text-label-bold gap-2">
+                        <span class="material-symbols-outlined text-[18px] text-primary">account_circle</span>
+                        <span id="displayCustomerName">Guest (Walk-in)</span>
+                    </div>
+                    <div id="customerDetails" class="hidden text-[11px] text-on-surface-variant font-code-data border-t border-outline-variant pt-1 mt-1">
+                        <div class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">location_on</span> <span id="displayCustomerAddress">No Address</span></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Cart Items -->
+            <!-- Cart Items Container -->
             <div id="cartItems" class="flex-1 overflow-y-auto p-stack-sm bg-surface-container-lowest">
-                <div class="h-full flex items-center justify-center text-outline opacity-50 flex-col gap-2">
-                    <span class="material-symbols-outlined text-4xl">shopping_cart</span>
-                    <p class="font-body-sm">Cart is empty</p>
+                <!-- Empty State -->
+                <div class="h-full flex items-center justify-center text-outline opacity-40 flex-col gap-4">
+                    <span class="material-symbols-outlined text-6xl">shopping_cart</span>
+                    <p class="font-body-base">Empty Cart</p>
                 </div>
             </div>
 
-            <!-- Totals & Action -->
-            <div class="p-stack-md border-t border-outline-variant bg-surface-container-low">
-                <div class="flex justify-between items-center mb-unit font-body-base text-body-base text-on-surface-variant">
-                    <span class="">Subtotal</span>
-                    <span class="font-code-data text-code-data" id="displaySubtotal">₱0.00</span>
-                </div>
-                <div class="flex justify-between items-center mb-stack-sm font-body-base text-body-base text-on-surface-variant">
-                    <span class="">Tax (0%)</span>
-                    <span class="font-code-data text-code-data" id="displayTax">₱0.00</span>
-                </div>
-                <div class="flex justify-between items-center mb-stack-md font-headline-md text-headline-md text-on-surface border-t border-outline-variant pt-unit">
-                    <span class="">Total</span>
-                    <span class="font-code-data text-code-data text-primary" id="cartTotal">₱0.00</span>
+            <!-- Calculation Section -->
+            <div class="p-stack-md border-t border-outline-variant bg-surface-container-low shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between items-center text-on-surface-variant font-body-base">
+                        <span>Subtotal</span>
+                        <span class="font-code-data" id="displaySubtotal">₱0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center text-on-surface-variant font-body-base">
+                        <span>Tax (0%)</span>
+                        <span class="font-code-data" id="displayTax">₱0.00</span>
+                    </div>
+                    <div class="pt-2 border-t border-outline flex justify-between items-center">
+                        <span class="font-headline-md text-on-surface">Total</span>
+                        <span class="font-display-lg text-primary" id="cartTotal">₱0.00</span>
+                    </div>
                 </div>
                 
-                <button type="submit" id="submitBtn" disabled class="w-full bg-primary disabled:bg-outline-variant hover:bg-primary-container text-on-primary font-headline-md text-headline-md py-stack-sm rounded shadow flex items-center justify-center gap-stack-sm transition-colors uppercase tracking-wider">
-                    <span class="material-symbols-outlined">payments</span>
+                <button type="submit" id="submitBtn" disabled class="w-full bg-primary disabled:bg-outline-variant hover:bg-[#003d7a] text-on-primary font-headline-md text-headline-md py-4 rounded shadow-md flex items-center justify-center gap-3 transition-all uppercase tracking-widest active:scale-[0.99]">
+                    <span class="material-symbols-outlined">check_circle</span>
                     Process Sale
                 </button>
             </div>
         </form>
     </aside>
+</div>
+
+<!-- Rider Selection Modal -->
+<div id="riderModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-stack-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+            <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">local_shipping</span>
+                Assign Delivery Rider
+            </h3>
+            <button onclick="closeRiderModal()" class="text-outline hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-stack-md">
+            <p class="text-on-surface-variant font-body-sm mb-4">Select an available rider to process this delivery order.</p>
+            <div class="grid gap-2" id="riderList">
+                @if (riders != null && riders.Rows.Count > 0)
+                {
+                    foreach (System.Data.DataRow row in riders.Rows)
+                    {
+                        <div onclick="selectRider(@row["id"], this)" class="p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-all flex items-center justify-between group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                                <div>
+                                    <div class="font-label-bold text-on-surface">@row["fullname"]</div>
+                                    <div class="text-[11px] text-[#137333] font-bold">Available</div>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-outline group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all">check_circle</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-8 text-outline italic">No active riders available</div>
+                }
+            </div>
+        </div>
+        <div class="p-stack-md bg-surface-container-low border-t border-outline-variant flex justify-end gap-3">
+            <button onclick="closeRiderModal()" class="px-6 py-2 border border-outline-variant rounded-full font-label-bold text-on-surface-variant hover:bg-surface-variant transition-colors">Cancel</button>
+            <button onclick="confirmRiderSelection()" id="confirmRiderBtn" disabled class="px-6 py-2 bg-primary disabled:bg-outline-variant text-on-primary rounded-full font-label-bold shadow-sm transition-all">Confirm Assignment</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -142,29 +206,98 @@
             currentOrderType = type;
             document.getElementById('orderTypeInput').value = type;
             
-            // UI Update
             const wBtn = document.getElementById('tabWalkIn');
             const dBtn = document.getElementById('tabDelivery');
+            const searchContainer = document.getElementById('customerSearchContainer');
+            const details = document.getElementById('customerDetails');
             
             if(type === 'Walk-In') {
                 wBtn.className = "px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all";
                 dBtn.className = "px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all";
+                searchContainer.classList.add('hidden');
+                // Reset customer to Guest for Walk-In
+                selectCustomer(0, "Walk-In Customer", "");
             } else {
                 dBtn.className = "px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all";
                 wBtn.className = "px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all";
+                searchContainer.classList.remove('hidden');
+                document.getElementById('customerSearchInput').value = '';
+                selectCustomer(0, "Select Customer for Delivery...", "");
             }
-            updateCustomerContext();
         }
 
-        function updateCustomerContext() {
-            const select = document.getElementById('customerSelect');
-            const customerId = select.value;
-            const customerName = select.options[select.selectedIndex].getAttribute('data-name') || "Guest (Walk-in)";
+        function searchCustomers(query) {
+            const results = document.getElementById('customerResults');
+            const items = results.querySelectorAll('.customer-item');
             
-            document.getElementById('customerIdInput').value = customerId;
-            document.getElementById('displayCustomerName').innerText = currentOrderType === 'Delivery' ? customerName : (customerId == "0" ? "Guest (Walk-in)" : customerName);
+            if (query.length < 1) {
+                results.classList.add('hidden');
+                return;
+            }
+
+            let hasResults = false;
+            query = query.toLowerCase();
+
+            items.forEach(item => {
+                const name = item.querySelector('.customer-name').innerText.toLowerCase();
+                if (name.includes(query)) {
+                    item.style.display = 'block';
+                    hasResults = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (hasResults) {
+                results.classList.remove('hidden');
+            } else {
+                results.classList.add('hidden');
+            }
+        }
+
+        function selectCustomer(id, name, address) {
+            document.getElementById('customerIdInput').value = id;
+            document.getElementById('displayCustomerName').innerText = name;
             
+            const details = document.getElementById('customerDetails');
+            const addressEl = document.getElementById('displayCustomerAddress');
+            
+            if (id !== 0) {
+                document.getElementById('customerSearchInput').value = name;
+                addressEl.innerText = address || "No Address Provided";
+                details.classList.remove('hidden');
+            } else {
+                details.classList.add('hidden');
+            }
+            
+            document.getElementById('customerResults').classList.add('hidden');
             validateOrder();
+        }
+
+        function handleProcessSale(e) {
+            if (currentOrderType === 'Delivery') {
+                e.preventDefault();
+                openRiderModal();
+            }
+        }
+
+        function openRiderModal() {
+            document.getElementById('riderModal').classList.remove('hidden');
+        }
+
+        function selectRider(id, el) {
+            document.getElementById('riderIdInput').value = id;
+            document.querySelectorAll('#riderList > div').forEach(div => div.classList.remove('border-primary', 'bg-primary-container/20'));
+            el.classList.add('border-primary', 'bg-primary-container/20');
+            document.getElementById('confirmRiderBtn').disabled = false;
+        }
+
+        function confirmRiderSelection() {
+            document.getElementById('posForm').submit();
+        }
+
+        function closeRiderModal() {
+            document.getElementById('riderModal').classList.add('hidden');
         }
 
         function filterProducts(query) {
@@ -205,10 +338,11 @@
             const jsonInput = document.getElementById('cartJsonInput');
 
             if (Object.keys(cart).length === 0) {
-                container.innerHTML = `<div class="h-full flex items-center justify-center text-outline opacity-50 flex-col gap-2">
-                    <span class="material-symbols-outlined text-4xl">shopping_cart</span>
-                    <p class="font-body-sm">Cart is empty</p>
-                </div>`;
+                container.innerHTML = `
+                    <div class="h-full flex items-center justify-center text-outline opacity-40 flex-col gap-4">
+                        <span class="material-symbols-outlined text-6xl">shopping_cart</span>
+                        <p class="font-body-base">Empty Cart</p>
+                    </div>`;
                 subtotalEl.innerText = "₱0.00";
                 totalEl.innerText = "₱0.00";
                 totalInput.value = "0";
@@ -227,19 +361,21 @@
                 itemsList.push({ ProductId: item.id, Quantity: item.qty });
 
                 container.innerHTML += `
-                    <div class="flex items-center justify-between border-b border-outline-variant py-stack-sm animate-in fade-in slide-in-from-right-2 duration-200">
-                        <div class="flex-1">
+                    <div class="flex items-center justify-between border-b border-outline-variant py-4 px-2 hover:bg-surface-container-low transition-colors group">
+                        <div class="flex-1 pr-4">
                             <h4 class="font-label-bold text-label-bold text-on-surface">${item.name}</h4>
                             <p class="font-body-sm text-body-sm text-on-surface-variant">₱${item.price.toFixed(2)} / ea</p>
                         </div>
-                        <div class="flex items-center gap-stack-sm">
+                        <div class="flex items-center gap-4">
                             <div class="flex items-center win-border rounded bg-surface">
-                                <button type="button" onclick="updateQty(${id}, -1)" class="px-2 py-1 hover:bg-surface-variant text-outline border-r border-outline-variant transition-colors"><span class="material-symbols-outlined text-[16px] block">remove</span></button>
-                                <span class="w-8 text-center font-code-data text-code-data">${item.qty}</span>
-                                <button type="button" onclick="updateQty(${id}, 1)" class="px-2 py-1 hover:bg-surface-variant text-outline border-l border-outline-variant transition-colors"><span class="material-symbols-outlined text-[16px] block">add</span></button>
+                                <button type="button" onclick="updateQty(${id}, -1)" class="w-8 h-8 flex items-center justify-center hover:bg-surface-variant text-outline border-r border-outline-variant transition-colors"><span class="material-symbols-outlined text-[18px]">remove</span></button>
+                                <span class="w-10 text-center font-code-data text-code-data font-bold">${item.qty}</span>
+                                <button type="button" onclick="updateQty(${id}, 1)" class="w-8 h-8 flex items-center justify-center hover:bg-surface-variant text-outline border-l border-outline-variant transition-colors"><span class="material-symbols-outlined text-[18px]">add</span></button>
                             </div>
-                            <span class="font-code-data text-code-data w-16 text-right">₱${subtotal.toFixed(2)}</span>
-                            <button type="button" onclick="removeItem(${id})" class="text-error hover:bg-error-container p-1 rounded transition-colors ml-1"><span class="material-symbols-outlined text-[18px] block">delete</span></button>
+                            <div class="w-20 text-right">
+                                <span class="font-code-data text-code-data font-bold text-on-surface">₱${subtotal.toFixed(2)}</span>
+                            </div>
+                            <button type="button" onclick="removeItem(${id})" class="text-error hover:bg-error-container p-2 rounded transition-colors opacity-0 group-hover:opacity-100"><span class="material-symbols-outlined text-[20px]">delete</span></button>
                         </div>
                     </div>
                 `;

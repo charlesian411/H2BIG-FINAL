@@ -1,0 +1,204 @@
+@{
+    Layout = null;
+    var sale = ViewBag.Sale as System.Data.DataRow;
+    var items = ViewBag.Items as System.Data.DataTable;
+    var subtotal = Convert.ToDecimal(sale["total_amount"]);
+    var tax = 0m; // Assuming 0% as per POS UI
+    var total = subtotal + tax;
+    var customerName = sale["customer_name"] != DBNull.Value ? sale["customer_name"].ToString() : "Walk-In Customer";
+}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Receipt #@sale["id"] - H2BIG</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00488d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#424752",
+                        "outline-variant": "#c2c6d4",
+                        "surface-container-low": "#f6f3f2",
+                        "error": "#ba1a1a"
+                    },
+                    spacing: {
+                        "container-padding": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "unit": "4px",
+                        "stack-sm": "8px",
+                        "gutter": "16px"
+                    },
+                    fontFamily: {
+                        "label-bold": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-base": ["Inter"],
+                        "code-data": ["Inter"],
+                        "display-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @@media print {
+            body { background-color: white !important; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            .print-area { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 80mm !important; margin: 0 auto !important; }
+            * { color: black !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body-base min-h-screen flex flex-col items-center py-stack-lg">
+    <!-- Navigation -->
+    <div class="fixed top-stack-md left-stack-md no-print z-50">
+        <a href="/Sales/POS" class="font-label-bold text-label-bold px-gutter py-stack-sm rounded bg-white shadow-sm border border-outline-variant hover:bg-surface-variant transition-colors flex items-center gap-unit text-primary">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to POS
+        </a>
+    </div>
+
+    <div class="fixed top-stack-md right-stack-md no-print z-50">
+        <button onclick="window.print()" class="font-label-bold text-label-bold px-gutter py-stack-sm rounded bg-primary text-white shadow-md hover:bg-[#003d7a] transition-all flex items-center gap-unit">
+            <span class="material-symbols-outlined text-[18px]">print</span>
+            Print Receipt
+        </button>
+    </div>
+
+    <!-- Receipt Container -->
+    <div class="print-area bg-surface-container-lowest w-full max-w-md shadow-md border border-outline-variant p-container-padding flex flex-col gap-stack-md">
+        <!-- Header -->
+        <div class="flex flex-col items-center border-b border-outline-variant pb-stack-md text-center">
+            <h1 class="text-[30px] font-black text-primary tracking-tight mb-unit">H2BIG</h1>
+            <p class="text-[13px] text-on-surface-variant">123 Waterway Blvd, Suite 100</p>
+            <p class="text-[13px] text-on-surface-variant">Tel: (555) 019-8273</p>
+        </div>
+
+        <!-- Transaction Meta -->
+        <div class="grid grid-cols-2 gap-unit text-[13px] font-medium text-on-surface border-b border-outline-variant pb-stack-md">
+            <div>Receipt #:</div>
+            <div class="text-right">TXN-@sale["id"].ToString().PadLeft(6, '0')</div>
+            <div>Date:</div>
+            <div class="text-right">@Convert.ToDateTime(sale["date_time"]).ToString("yyyy-MM-dd")</div>
+            <div>Time:</div>
+            <div class="text-right">@Convert.ToDateTime(sale["date_time"]).ToString("HH:mm:ss")</div>
+            <div>Cashier:</div>
+            <div class="text-right">@sale["cashier_name"]</div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="text-[13px] font-medium text-on-surface border-b border-outline-variant pb-stack-md">
+            <div class="flex justify-between mb-unit">
+                <span class="text-on-surface-variant">Customer:</span>
+                <span>@customerName</span>
+            </div>
+            @if (sale["customer_id"] != DBNull.Value)
+            {
+                <div class="flex justify-between">
+                    <span class="text-on-surface-variant">Account ID:</span>
+                    <span>CUST-@sale["customer_id"].ToString().PadLeft(4, '0')</span>
+                </div>
+            }
+        </div>
+
+        <!-- Line Items -->
+        <div class="border-b border-outline-variant pb-stack-md">
+            <table class="w-full text-left text-[13px]">
+                <thead>
+                    <tr class="text-on-surface-variant border-b border-outline-variant font-bold">
+                        <th class="py-unit">Item</th>
+                        <th class="py-unit text-center">Qty</th>
+                        <th class="py-unit text-right">Price</th>
+                        <th class="py-unit text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="text-on-surface">
+                    @foreach (System.Data.DataRow row in items.Rows)
+                    {
+                        <tr class="border-b border-surface-variant/50">
+                            <td class="py-stack-sm pr-unit">@row["product_name"]</td>
+                            <td class="py-stack-sm text-center">@row["quantity"]</td>
+                            <td class="py-stack-sm text-right">₱@Convert.ToDecimal(row["subtotal"]) / @row["quantity"]</td>
+                            <td class="py-stack-sm text-right">₱@Convert.ToDecimal(row["subtotal"]).ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Container Ledger -->
+        @if (ViewBag.Ledger != null)
+        {
+            var ledger = ViewBag.Ledger as System.Data.DataRow;
+            <div class="bg-surface-container-low rounded p-stack-sm border border-outline-variant text-[13px] font-medium">
+                <h3 class="text-[11px] font-bold text-on-surface-variant mb-unit uppercase tracking-wider">Container Ledger</h3>
+                <div class="flex justify-between mb-unit">
+                    <span>Bottles In (Returns):</span>
+                    <span>@ledger["bottles_in"]</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Bottles Out (Taken):</span>
+                    <span>@ledger["bottles_out"]</span>
+                </div>
+            </div>
+        }
+
+        <!-- Financial Summary -->
+        <div class="text-[13px] font-medium text-on-surface border-b border-outline-variant pb-stack-md">
+            <div class="flex justify-between mb-unit">
+                <span class="text-on-surface-variant">Subtotal:</span>
+                <span>₱@subtotal.ToString("0.00")</span>
+            </div>
+            <div class="flex justify-between mb-unit">
+                <span class="text-on-surface-variant">Tax (0%):</span>
+                <span>₱@tax.ToString("0.00")</span>
+            </div>
+            <div class="flex justify-between text-[20px] font-bold mt-stack-sm pt-stack-sm border-t border-outline-variant text-primary">
+                <span>TOTAL:</span>
+                <span>₱@total.ToString("0.00")</span>
+            </div>
+        </div>
+
+        <!-- Balance Summary -->
+        @if (sale["customer_id"] != DBNull.Value)
+        {
+            <div class="text-[13px] font-medium text-on-surface border-b border-outline-variant pb-stack-md">
+                <h3 class="text-[11px] font-bold text-on-surface-variant mb-unit uppercase tracking-wider">Account Status</h3>
+                <div class="flex justify-between mb-unit">
+                    <span>Current Bottle Debt:</span>
+                    <span class="text-error font-bold">@sale["bottle_debt"] Bottle(s)</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Outstanding Balance:</span>
+                    <span>₱0.00</span>
+                </div>
+            </div>
+        }
+
+        <!-- Footer -->
+        <div class="text-center mt-stack-md text-[13px] text-on-surface-variant">
+            <p class="mb-unit font-bold text-on-surface">Thank you for choosing H2BIG!</p>
+            <p>Retain this receipt for container returns.</p>
+            <p class="mt-stack-sm text-[10px] opacity-50">SYS_GEN: @DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ")</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print on load
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

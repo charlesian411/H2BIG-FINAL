@@ -22,24 +22,26 @@ namespace H2BIG.Controllers
         [HttpPost]
         public IActionResult Create(Product product)
         {
-            _db.ExecuteNonQuery("INSERT INTO products (name, price, stock) VALUES (@name, @price, @stock)",
+            _db.ExecuteNonQuery("INSERT INTO products (name, price, stock, default_qty) VALUES (@name, @price, @stock, @dqty)",
                 new MySqlParameter[] {
                     new MySqlParameter("@name", product.Name),
                     new MySqlParameter("@price", product.Price),
-                    new MySqlParameter("@stock", product.Stock)
+                    new MySqlParameter("@stock", product.Stock),
+                    new MySqlParameter("@dqty", product.DefaultQty)
                 });
             return RedirectToAction("Index");
         }
-
+ 
         [HttpPost]
         public IActionResult Edit(Product product)
         {
-            _db.ExecuteNonQuery("UPDATE products SET name = @name, price = @price, stock = @stock WHERE id = @id",
+            _db.ExecuteNonQuery("UPDATE products SET name = @name, price = @price, stock = @stock, default_qty = @dqty WHERE id = @id",
                 new MySqlParameter[] {
                     new MySqlParameter("@id", product.Id),
                     new MySqlParameter("@name", product.Name),
                     new MySqlParameter("@price", product.Price),
-                    new MySqlParameter("@stock", product.Stock)
+                    new MySqlParameter("@stock", product.Stock),
+                    new MySqlParameter("@dqty", product.DefaultQty)
                 });
             return RedirectToAction("Index");
         }

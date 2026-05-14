@@ -20,15 +20,19 @@ namespace H2BIG.Controllers
             var dtProducts = _db.ExecuteQuery("SELECT * FROM products WHERE stock > 0");
             ViewBag.Products = dtProducts;
 
-            // Fetch customers
-            var dtCustomers = _db.ExecuteQuery("SELECT id, name FROM customers");
+            // Fetch customers with address
+            var dtCustomers = _db.ExecuteQuery("SELECT id, name, address FROM customers");
             ViewBag.Customers = dtCustomers;
+
+            // Fetch active riders
+            var dtRiders = _db.ExecuteQuery("SELECT id, fullname FROM users WHERE role = 'Rider' AND status = 'Active'");
+            ViewBag.Riders = dtRiders;
 
             return View();
         }
 
         [HttpPost]
-        public IActionResult Process(string type, int? customerId, decimal totalAmount, string cartJson)
+        public IActionResult Process(string type, int? customerId, int? riderId, decimal totalAmount, string cartJson)
         {
             var userIdStr = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdStr)) return Json(new { success = false, message = "Session expired" });
@@ -46,7 +50,7 @@ namespace H2BIG.Controllers
                 // 1. Insert into sales
                 string saleQuery = "INSERT INTO sales (customer_id, total_amount, type, staff_id) VALUES (@cid, @total, @type, @sid); SELECT LAST_INSERT_ID();";
                 var saleCmd = new MySqlCommand(saleQuery, connection, transaction);
-                saleCmd.Parameters.AddWithValue("@cid", (customerId == 0 ? DBNull.Value : (object?)customerId));
+                saleCmd.Parameters.AddWithValue("@cid", (customerId == 0 || customerId == null ? DBNull.Value : (object)customerId));
                 saleCmd.Parameters.AddWithValue("@total", totalAmount);
                 saleCmd.Parameters.AddWithValue("@type", type);
                 saleCmd.Parameters.AddWithValue("@sid", staffId);
@@ -55,69 +59,97 @@ namespace H2BIG.Controllers
                 // 2. Insert items and update stock
                 foreach (var item in cartItems)
                 {
-                    // Fetch current price
-                    var productDt = _db.ExecuteQuery("SELECT price FROM products WHERE id = @pid", new MySqlParameter[] { new MySqlParameter("@pid", item.ProductId) });
-                    decimal price = Convert.ToDecimal(productDt.Rows[0]["price"]);
+                    // Fetch price using same connection/transaction
+                    var priceCmd = new MySqlCommand("SELECT price FROM products WHERE id = @pid", connection, transaction);
+                    priceCmd.Parameters.AddWithValue("@pid", item.ProductId);
+                    decimal price = Convert.ToDecimal(priceCmd.ExecuteScalar());
                     decimal subtotal = price * item.Quantity;
 
-                    string itemQuery = "INSERT INTO sale_items (sale_id, product_id, quantity, subtotal) VALUES (@sid, @pid, @qty, @sub)";
-                    var itemCmd = new MySqlCommand(itemQuery, connection, transaction);
+                    var itemCmd = new MySqlCommand("INSERT INTO sale_items (sale_id, product_id, quantity, subtotal) VALUES (@sid, @pid, @qty, @sub)", connection, transaction);
                     itemCmd.Parameters.AddWithValue("@sid", saleId);
                     itemCmd.Parameters.AddWithValue("@pid", item.ProductId);
                     itemCmd.Parameters.AddWithValue("@qty", item.Quantity);
                     itemCmd.Parameters.AddWithValue("@sub", subtotal);
                     itemCmd.ExecuteNonQuery();
 
-                    string stockQuery = "UPDATE products SET stock = stock - @qty WHERE id = @pid";
-                    var stockCmd = new MySqlCommand(stockQuery, connection, transaction);
-                    stockCmd.Parameters.AddWithValue("@qty", item.Quantity);
-                    stockCmd.Parameters.AddWithValue("@pid", item.ProductId);
-                    stockCmd.ExecuteNonQuery();
+                    // Only decrease stock for Deliveries (Walk-ins bring their own bottles)
+                    if (type != "Walk-In")
+                    {
+                        var stockCmd = new MySqlCommand("UPDATE products SET stock = stock - @qty WHERE id = @pid", connection, transaction);
+                        stockCmd.Parameters.AddWithValue("@qty", item.Quantity);
+                        stockCmd.Parameters.AddWithValue("@pid", item.ProductId);
+                        stockCmd.ExecuteNonQuery();
+                    }
                 }
 
-                // 3. If Delivery, create delivery entry (Assign to a random active rider or first available)
+                // 3. If Delivery, create delivery entry
                 if (type == "Delivery")
                 {
-                    var riderDt = _db.ExecuteQuery("SELECT id FROM users WHERE role = 'Rider' AND status = 'Active' LIMIT 1");
-                    if (riderDt.Rows.Count > 0)
-                    {
-                        int riderId = Convert.ToInt32(riderDt.Rows[0]["id"]);
-                        string delQuery = "INSERT INTO deliveries (sale_id, rider_id, status) VALUES (@sid, @rid, 'Pending')";
-                        var delCmd = new MySqlCommand(delQuery, connection, transaction);
-                        delCmd.Parameters.AddWithValue("@sid", saleId);
-                        delCmd.Parameters.AddWithValue("@rid", riderId);
-                        delCmd.ExecuteNonQuery();
-                    }
+                    var delCmd = new MySqlCommand("INSERT INTO deliveries (sale_id, rider_id, status) VALUES (@sid, @rid, 'Pending')", connection, transaction);
+                    delCmd.Parameters.AddWithValue("@sid", saleId);
+                    delCmd.Parameters.AddWithValue("@rid", riderId ?? 0);
+                    delCmd.ExecuteNonQuery();
                 }
 
                 // 4. Update Bottle Ledger if customer exists
                 if (customerId > 0)
                 {
                     int totalQty = cartItems.Sum(i => i.Quantity);
-                    string ledgerQuery = "INSERT INTO bottle_ledger (customer_id, bottles_out, bottles_in, transaction_id) VALUES (@cid, @qty, 0, @sid)";
-                    var ledgerCmd = new MySqlCommand(ledgerQuery, connection, transaction);
+                    var ledgerCmd = new MySqlCommand("INSERT INTO bottle_ledger (customer_id, bottles_out, bottles_in, transaction_id) VALUES (@cid, @qty, 0, @sid)", connection, transaction);
                     ledgerCmd.Parameters.AddWithValue("@cid", customerId);
                     ledgerCmd.Parameters.AddWithValue("@qty", totalQty);
                     ledgerCmd.Parameters.AddWithValue("@sid", saleId);
                     ledgerCmd.ExecuteNonQuery();
 
-                    // Update customer debt total
-                    string debtQuery = "UPDATE customers SET bottle_debt = bottle_debt + @qty WHERE id = @cid";
-                    var debtCmd = new MySqlCommand(debtQuery, connection, transaction);
+                    var debtCmd = new MySqlCommand("UPDATE customers SET bottle_debt = bottle_debt + @qty WHERE id = @cid", connection, transaction);
                     debtCmd.Parameters.AddWithValue("@qty", totalQty);
                     debtCmd.Parameters.AddWithValue("@cid", customerId);
                     debtCmd.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
-                return RedirectToAction("POS", new { success = true });
+                
+                if (type == "Walk-In")
+                {
+                    return RedirectToAction("Receipt", new { id = saleId });
+                }
+                
+                TempData["Success"] = "Sale processed successfully!";
+                return RedirectToAction("POS");
             }
             catch (Exception ex)
             {
                 transaction.Rollback();
-                ViewBag.Error = "Transaction failed: " + ex.Message;
-                return RedirectToAction("POS", new { error = ex.Message });
+                return RedirectToAction("POS", new { error = "Transaction failed: " + ex.Message });
             }
+        }
+
+        [HttpGet]
+        public IActionResult Receipt(int id)
+        {
+            var saleDt = _db.ExecuteQuery($@"
+                SELECT s.*, u.fullname as cashier_name, c.name as customer_name, c.id as customer_id_label, c.bottle_debt 
+                FROM sales s 
+                LEFT JOIN users u ON s.staff_id = u.id 
+                LEFT JOIN customers c ON s.customer_id = c.id 
+                WHERE s.id = {id}");
+            
+            if (saleDt.Rows.Count == 0) return NotFound();
+            
+            var itemsDt = _db.ExecuteQuery($@"
+                SELECT si.*, p.name as product_name, p.price as current_price
+                FROM sale_items si 
+                JOIN products p ON si.product_id = p.id 
+                WHERE si.sale_id = {id}");
+
+            // Fetch bottle movement for this transaction
+            var ledgerDt = _db.ExecuteQuery($"SELECT bottles_out, bottles_in FROM bottle_ledger WHERE transaction_id = {id}");
+            
+            ViewBag.Sale = saleDt.Rows[0];
+            ViewBag.Items = itemsDt;
+            ViewBag.Ledger = ledgerDt.Rows.Count > 0 ? ledgerDt.Rows[0] : null;
+            
+            return View();
         }
 
         private class CartItem

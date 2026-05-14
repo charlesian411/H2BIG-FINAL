@@ -86,7 +86,15 @@ namespace H2BIG.Controllers
         [HttpPost]
         public IActionResult Delete(int id)
         {
+            // 1. Unlink sales (set customer_id to NULL so we don't lose sales history)
+            _db.ExecuteNonQuery("UPDATE sales SET customer_id = NULL WHERE customer_id = @id", new MySqlParameter[] { new MySqlParameter("@id", id) });
+            
+            // 2. Delete bottle ledger entries (these are specific to the customer)
+            _db.ExecuteNonQuery("DELETE FROM bottle_ledger WHERE customer_id = @id", new MySqlParameter[] { new MySqlParameter("@id", id) });
+            
+            // 3. Finally delete the customer
             _db.ExecuteNonQuery("DELETE FROM customers WHERE id = @id", new MySqlParameter[] { new MySqlParameter("@id", id) });
+            
             return RedirectToAction("Index");
         }
     }
