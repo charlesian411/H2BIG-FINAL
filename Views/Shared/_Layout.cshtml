@@ -127,7 +127,7 @@
                     @if (role == "Admin" || role == "Staff" || role == "Rider")
                     {
                         <li>
-                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == role ? activeClass : inactiveClass)" asp-controller="@role" asp-action="Dashboard">
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(ViewBag.ActivePage == "Dashboard" || (ViewBag.ActivePage == null && currentController == role) ? activeClass : inactiveClass)" asp-controller="@role" asp-action="Dashboard">
                                 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
                                 Dashboard
                             </a>
@@ -143,7 +143,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Sales" ? activeClass : inactiveClass)" asp-controller="Sales" asp-action="POS">
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(ViewBag.ActivePage != "Dashboard" && currentController == "Sales" ? activeClass : inactiveClass)" asp-controller="Sales" asp-action="POS">
                                 <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
                                 POS/Sales
                             </a>
@@ -160,12 +160,7 @@
                                 Assigned Deliveries
                             </a>
                         </li>
-                        <li>
-                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Inventory" ? activeClass : inactiveClass)" asp-controller="Inventory" asp-action="Index">
-                                <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
-                                Inventory
-                            </a>
-                        </li>
+
                     }
 
                     @if (role == "Admin")
@@ -174,6 +169,12 @@
                             <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Users" ? activeClass : inactiveClass)" asp-controller="Users" asp-action="Index">
                                 <span class="material-symbols-outlined" data-icon="badge">badge</span>
                                 Employees
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT transition-all duration-100 ease-in-out @(currentController == "Inventory" ? activeClass : inactiveClass)" asp-controller="Inventory" asp-action="Index">
+                                <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                                Inventory
                             </a>
                         </li>
                         <li>

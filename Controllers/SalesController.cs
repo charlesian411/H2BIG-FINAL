@@ -95,16 +95,21 @@ namespace H2BIG.Controllers
                 if (customerId > 0)
                 {
                     int totalQty = cartItems.Sum(i => i.Quantity);
-                    var ledgerCmd = new MySqlCommand("INSERT INTO bottle_ledger (customer_id, bottles_out, bottles_in, transaction_id) VALUES (@cid, @qty, 0, @sid)", connection, transaction);
-                    ledgerCmd.Parameters.AddWithValue("@cid", customerId);
-                    ledgerCmd.Parameters.AddWithValue("@qty", totalQty);
-                    ledgerCmd.Parameters.AddWithValue("@sid", saleId);
-                    ledgerCmd.ExecuteNonQuery();
-
+                    
+                    // Update customer debt first
                     var debtCmd = new MySqlCommand("UPDATE customers SET bottle_debt = bottle_debt + @qty WHERE id = @cid", connection, transaction);
                     debtCmd.Parameters.AddWithValue("@qty", totalQty);
                     debtCmd.Parameters.AddWithValue("@cid", customerId);
                     debtCmd.ExecuteNonQuery();
+
+                    // Now insert into ledger with the updated balance
+                    var ledgerCmd = new MySqlCommand(@"
+                        INSERT INTO bottle_ledger (customer_id, bottles_out, bottles_in, balance, transaction_id) 
+                        VALUES (@cid, @qty, 0, (SELECT bottle_debt FROM customers WHERE id = @cid), @sid)", connection, transaction);
+                    ledgerCmd.Parameters.AddWithValue("@cid", customerId);
+                    ledgerCmd.Parameters.AddWithValue("@qty", totalQty);
+                    ledgerCmd.Parameters.AddWithValue("@sid", saleId);
+                    ledgerCmd.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
@@ -150,6 +155,36 @@ namespace H2BIG.Controllers
             ViewBag.Ledger = ledgerDt.Rows.Count > 0 ? ledgerDt.Rows[0] : null;
             
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult DeliveryHistory()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserRole"))) return RedirectToAction("Login", "Auth");
+            var dt = _db.ExecuteQuery(@"
+                SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.id
+                WHERE s.type = 'Delivery'
+                ORDER BY s.date_time DESC");
+            ViewData["Title"] = "Delivery Transaction History";
+            ViewBag.ActivePage = "Dashboard";
+            return View("History", dt);
+        }
+
+        [HttpGet]
+        public IActionResult WalkInHistory()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserRole"))) return RedirectToAction("Login", "Auth");
+            var dt = _db.ExecuteQuery(@"
+                SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.id
+                WHERE s.type = 'Walk-In'
+                ORDER BY s.date_time DESC");
+            ViewData["Title"] = "Walk-In Transaction History";
+            ViewBag.ActivePage = "Dashboard";
+            return View("History", dt);
         }
 
         private class CartItem

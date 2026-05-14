@@ -33,3 +33,112 @@
         <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
     </div>
 </div>
+
+@{
+    var recentDeliveries = ViewBag.RecentDeliveries as System.Data.DataTable;
+    var recentWalkIns = ViewBag.RecentWalkIns as System.Data.DataTable;
+}
+
+<!-- Delivery Transactions -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col mt-stack-lg">
+    <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+        <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
+            <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+            Delivery Transactions
+        </h2>
+        <a asp-controller="Sales" asp-action="DeliveryHistory" class="text-primary font-label-bold text-label-bold text-[11px] hover:underline">View All</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse font-code-data text-code-data whitespace-nowrap">
+            <thead class="bg-surface-container-lowest border-b border-outline-variant">
+                <tr>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">ID</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Timestamp</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Customer</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Amount</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Type</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (recentDeliveries != null && recentDeliveries.Rows.Count > 0)
+                {
+                    foreach (System.Data.DataRow row in recentDeliveries.Rows)
+                    {
+                        <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+                            <td class="py-stack-sm px-stack-md text-primary font-bold">#@row["id"]</td>
+                            <td class="py-stack-sm px-stack-md text-on-surface-variant">@Convert.ToDateTime(row["date_time"]).ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="py-stack-sm px-stack-md text-on-surface">@row["CustomerName"]</td>
+                            <td class="py-stack-sm px-stack-md font-bold text-primary">₱@Convert.ToDecimal(row["total_amount"]).ToString("0.00")</td>
+                            <td class="py-stack-sm px-stack-md">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F0F7FF] text-primary">Delivery</span>
+                            </td>
+                            <td class="py-stack-sm px-stack-md text-center">
+                                <a asp-controller="Sales" asp-action="Receipt" asp-route-id="@row["id"]" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-surface-container-high hover:bg-primary hover:text-on-primary rounded text-[10px] font-bold transition-colors border border-outline-variant/30">
+                                    <span class="material-symbols-outlined text-[14px]">receipt_long</span>
+                                    View Printed Receipts
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="py-stack-md text-center text-outline italic font-body-sm">No recent deliveries found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Walk-In Transactions -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col mt-stack-lg">
+    <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+        <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
+            <span class="material-symbols-outlined text-[18px]">directions_walk</span>
+            Walk-In Customers
+        </h2>
+        <a asp-controller="Sales" asp-action="WalkInHistory" class="text-primary font-label-bold text-label-bold text-[11px] hover:underline">View All</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse font-code-data text-code-data whitespace-nowrap">
+            <thead class="bg-surface-container-lowest border-b border-outline-variant">
+                <tr>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">ID</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Timestamp</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Customer</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Amount</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant">Type</th>
+                    <th class="py-stack-sm px-stack-md font-label-bold text-on-surface-variant text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (recentWalkIns != null && recentWalkIns.Rows.Count > 0)
+                {
+                    foreach (System.Data.DataRow row in recentWalkIns.Rows)
+                    {
+                        <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+                            <td class="py-stack-sm px-stack-md text-primary font-bold">#@row["id"]</td>
+                            <td class="py-stack-sm px-stack-md text-on-surface-variant">@Convert.ToDateTime(row["date_time"]).ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="py-stack-sm px-stack-md text-on-surface">@row["CustomerName"]</td>
+                            <td class="py-stack-sm px-stack-md font-bold text-primary">₱@Convert.ToDecimal(row["total_amount"]).ToString("0.00")</td>
+                            <td class="py-stack-sm px-stack-md">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32]">Walk-In</span>
+                            </td>
+                            <td class="py-stack-sm px-stack-md text-center">
+                                <a asp-controller="Sales" asp-action="Receipt" asp-route-id="@row["id"]" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-surface-container-high hover:bg-primary hover:text-on-primary rounded text-[10px] font-bold transition-colors border border-outline-variant/30">
+                                    <span class="material-symbols-outlined text-[14px]">receipt_long</span>
+                                    View Printed Receipts
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="py-stack-md text-center text-outline italic font-body-sm">No recent walk-in sales found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

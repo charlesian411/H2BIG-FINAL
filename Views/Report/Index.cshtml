@@ -4,127 +4,254 @@
     var debtAlerts = ViewBag.DebtAlerts as System.Data.DataTable;
 }
 
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
 <!-- Page Header -->
-<div class="flex items-end justify-between mb-stack-md">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-stack-md gap-4">
     <div>
-        <h1 class="font-headline-md text-headline-md font-bold text-on-surface">BUSINESS REPORTS</h1>
-        <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Executive summary and system metrics.</p>
+        <h1 class="font-display-lg text-display-lg font-bold text-on-surface">Admin Reports</h1>
+        <p class="text-on-surface-variant font-body-sm text-body-sm mt-1">System overview and executive metrics.</p>
+    </div>
+    <div class="flex gap-2">
+        <button class="h-10 border border-outline-variant hover:bg-surface-container text-on-surface font-label-bold text-label-bold px-4 rounded flex items-center gap-2 transition-colors bg-surface-lowest shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">download</span>
+            Export PDF
+        </button>
+        <button class="h-10 border border-outline-variant hover:bg-surface-container text-on-surface font-label-bold text-label-bold px-4 rounded flex items-center gap-2 transition-colors bg-surface-lowest shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+            Date Range
+        </button>
     </div>
 </div>
 
-<!-- KPI Cards Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mt-stack-lg">
-    <!-- Today -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
-        <div class="flex justify-between items-start">
-            <span class="font-label-bold text-label-bold text-on-surface-variant">Sales Today</span>
-            <span class="material-symbols-outlined text-primary text-[20px]">payments</span>
+<!-- Top Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+    <!-- Total Sales (Today) -->
+    <div class="bg-surface-lowest border border-outline-variant rounded p-stack-md flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-primary transition-colors h-[120px]">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+        <div class="flex justify-between items-start pl-2">
+            <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[11px]">Total Sales (Today)</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">payments</span>
         </div>
-        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">₱@ViewBag.TotalSalesToday.ToString("N2")</div>
-        <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+        <div class="pl-2">
+            <div class="font-display-lg text-display-lg text-on-surface font-bold">₱@ViewBag.TotalSalesToday.ToString("N2")</div>
+        </div>
     </div>
 
-    <!-- Weekly -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
-        <div class="flex justify-between items-start">
-            <span class="font-label-bold text-label-bold text-on-surface-variant">Sales (7 Days)</span>
-            <span class="material-symbols-outlined text-outline text-[20px]">calendar_view_week</span>
+    <!-- Pending Deliveries -->
+    <div class="bg-surface-lowest border border-outline-variant rounded p-stack-md flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-outline transition-colors h-[120px]">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+        <div class="flex justify-between items-start pl-2">
+            <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[11px]">Pending Deliveries</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">local_shipping</span>
         </div>
-        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">₱@ViewBag.TotalSalesWeekly.ToString("N2")</div>
+        <div class="pl-2">
+            <div class="font-display-lg text-display-lg text-on-surface font-bold">@ViewBag.PendingDeliveries</div>
+            <p class="text-[12px] text-on-surface-variant font-medium mt-1">Routes Active</p>
+        </div>
     </div>
 
-    <!-- Most Sold -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
-        <div class="flex justify-between items-start">
-            <span class="font-label-bold text-label-bold text-on-surface-variant">Best Seller</span>
-            <span class="material-symbols-outlined text-primary text-[20px]">star</span>
+    <!-- Total Bottle Debt -->
+    <div class="bg-surface-lowest border border-error rounded p-stack-md flex flex-col justify-between shadow-sm relative overflow-hidden h-[120px]">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+        <div class="flex justify-between items-start pl-2">
+            <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[11px]">Total Bottle Debt</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">content_paste</span>
         </div>
-        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm truncate" title="@ViewBag.MostSoldProduct">@ViewBag.MostSoldProduct</div>
-    </div>
-
-    <!-- Outstanding Bottle Debt (Alert State) -->
-    <div class="bg-surface-container-lowest border border-error rounded p-stack-md flex flex-col gap-unit relative overflow-hidden group">
-        <div class="absolute inset-0 bg-error-container opacity-20 pointer-events-none"></div>
-        <div class="flex justify-between items-start relative z-10">
-            <span class="font-label-bold text-label-bold text-on-error-container flex items-center gap-unit">
-                <span class="material-symbols-fill text-[16px]">warning</span>
-                Total Bottle Debt
-            </span>
-            <span class="material-symbols-outlined text-error text-[20px]">water_bottle</span>
+        <div class="pl-2">
+            <div class="font-display-lg text-display-lg text-on-surface font-bold">@ViewBag.TotalBottleDebt</div>
+            <p class="text-[12px] text-on-surface-variant font-medium mt-1">Units Outstanding</p>
         </div>
-        <div class="font-display-lg text-display-lg text-on-error-container mt-stack-sm relative z-10">@ViewBag.TotalBottleDebt</div>
-        <div class="absolute bottom-0 left-0 h-1 w-full bg-error"></div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter mt-stack-lg">
-    <!-- Debt Alerts List -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col h-[400px] shadow-sm">
-        <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
-            <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
-                <span class="material-symbols-outlined text-[18px] text-error">assignment_late</span>
-                Top Debtors
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+    <!-- Chart Section (Spans 2 columns) -->
+    <div class="lg:col-span-2 bg-surface-lowest border border-outline-variant rounded flex flex-col shadow-sm">
+        <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+            <h2 class="font-label-bold text-label-bold text-on-surface text-[14px]">Profit & Loss (YTD)</h2>
+            <button class="text-outline hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined text-[18px]">more_vert</span>
+            </button>
+        </div>
+        <div class="p-4 flex-1">
+            <div id="profitChart" class="w-full h-[350px]"></div>
+        </div>
+    </div>
+
+    <!-- Debt Alerts Sidebar -->
+    <div class="bg-surface-lowest border border-outline-variant rounded flex flex-col shadow-sm">
+        <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+            <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-2 text-[14px]">
+                <span class="material-symbols-outlined text-[18px] text-error">warning</span>
+                Debt Alerts
             </h2>
-            <span class="text-[11px] font-bold text-on-surface-variant">Requires Attention</span>
+            <span class="text-[10px] font-bold text-error border border-error px-2 py-0.5 rounded uppercase tracking-wider bg-error-container/20">Action Req</span>
         </div>
-        <div class="flex-1 overflow-y-auto">
-            <table class="w-full text-left border-collapse font-code-data text-code-data">
+        <div class="flex-1 overflow-y-auto max-h-[380px]">
+            <table class="w-full text-left border-collapse">
                 <thead class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant shadow-[0_1px_0_0_#c2c6d4]">
                     <tr>
-                        <th class="py-unit px-stack-sm font-label-bold text-on-surface-variant">Customer</th>
-                        <th class="py-unit px-stack-sm font-label-bold text-on-surface-variant text-right">Debt Qty</th>
-                        <th class="py-unit px-stack-sm font-label-bold text-on-surface-variant text-right">Severity</th>
+                        <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold">Customer ID</th>
+                        <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold text-center">Units</th>
+                        <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold text-right">Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (debtAlerts != null)
+                    @if (debtAlerts != null && debtAlerts.Rows.Count > 0)
                     {
                         foreach (System.Data.DataRow row in debtAlerts.Rows)
                         {
                             var severity = row["Status"].ToString();
-                            var severityColor = severity == "Critical" ? "text-error font-bold" : 
-                                                severity == "Warning" ? "text-[#F57F17] font-bold" : 
-                                                "text-primary font-bold";
+                            var severityBg = severity == "Critical" ? "bg-error-container/20 text-error border-error/50" : 
+                                             severity == "Warning" ? "bg-surface-container text-on-surface-variant border-outline-variant" : 
+                                             "bg-surface-container-low text-outline border-outline-variant/50";
+                            
+                            var unitColor = severity == "Critical" ? "text-error font-bold" : "text-on-surface-variant";
 
-                            <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group cursor-pointer">
-                                <td class="py-stack-sm px-stack-sm text-on-surface truncate max-w-[120px]">@row["name"]</td>
-                                <td class="py-stack-sm px-stack-sm text-on-surface text-right">@row["bottle_debt"]</td>
-                                <td class="py-stack-sm px-stack-sm text-right">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold @(severity == "Critical" ? "bg-error-container text-on-error-container" : severity == "Warning" ? "bg-[#FFF8E1] text-[#F57F17]" : "bg-primary-container text-on-primary-container")">
+                            <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+                                <td class="py-3 px-4 text-[13px] text-primary font-medium hover:underline cursor-pointer">CUST-@row["id"]</td>
+                                <td class="py-3 px-4 text-[13px] text-center @unitColor">@row["bottle_debt"]</td>
+                                <td class="py-3 px-4 text-right">
+                                    <span class="inline-flex items-center justify-center px-2 py-0.5 border rounded text-[10px] font-bold @severityBg">
                                         @severity
                                     </span>
                                 </td>
                             </tr>
                         }
                     }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-outline italic text-sm">No debt alerts found.</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <!-- Logistics Analytics -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col h-[400px] shadow-sm">
-        <div class="p-stack-sm px-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
-            <h2 class="font-label-bold text-label-bold text-on-surface flex items-center gap-unit">
-                <span class="material-symbols-outlined text-[18px] text-primary">local_shipping</span>
-                Logistics Overview
-            </h2>
-        </div>
-        <div class="flex-1 p-stack-md flex flex-col gap-4">
-            <div class="flex items-center justify-between p-4 bg-surface rounded border border-outline-variant">
-                <div>
-                    <p class="text-on-surface-variant font-label-bold text-label-bold uppercase">Pending Orders</p>
-                    <h3 class="font-display-lg text-display-lg text-primary">@ViewBag.PendingDeliveries</h3>
-                </div>
-                <span class="material-symbols-outlined text-outline text-4xl">hourglass_empty</span>
-            </div>
-            <div class="flex items-center justify-between p-4 bg-surface rounded border border-outline-variant">
-                <div>
-                    <p class="text-on-surface-variant font-label-bold text-label-bold uppercase">Completed Today</p>
-                    <h3 class="font-display-lg text-display-lg text-[#137333]">@ViewBag.CompletedDeliveries</h3>
-                </div>
-                <span class="material-symbols-outlined text-[#137333] text-4xl">task_alt</span>
-            </div>
+        <div class="border-t border-outline-variant p-3 bg-surface-container-lowest text-center">
+            <a href="#" class="text-primary font-label-bold text-[12px] hover:underline uppercase tracking-wider font-bold">View Full Ledger</a>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fetch data passed from Controller
+            var months = @Html.Raw(ViewBag.ChartMonths);
+            var revenues = @Html.Raw(ViewBag.ChartRevenues);
+            var expenses = @Html.Raw(ViewBag.ChartExpenses);
+
+            // ApexCharts Modern Dashboard Configuration (Stacked Columns)
+            var options = {
+                series: [{
+                    name: 'Revenue',
+                    data: revenues
+                }, {
+                    name: 'Operating Expenses',
+                    data: expenses
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    stacked: true,
+                    toolbar: {
+                        show: false
+                    },
+                    zoom: {
+                        enabled: false
+                    },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                colors: ['#00488d', '#a8c8ff'], // Primary and Primary Fixed Dim
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        borderRadius: 2,
+                        columnWidth: '40%',
+                        dataLabels: {
+                            total: {
+                                enabled: false
+                            }
+                        }
+                    },
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    width: 0
+                },
+                xaxis: {
+                    categories: months,
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                    labels: {
+                        style: {
+                            colors: '#a1a3a6', // Outline color
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (val) {
+                            return "₱" + (val / 1000).toFixed(0) + "k"; // K format
+                        },
+                        style: {
+                            colors: '#a1a3a6', // Outline color
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#e4e2e1', // Surface variant
+                    strokeDashArray: 0,
+                    yaxis: {
+                        lines: {
+                            show: true
+                        }
+                    },
+                    xaxis: {
+                        lines: {
+                            show: false
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    markers: {
+                        radius: 2,
+                        width: 12,
+                        height: 12
+                    },
+                    itemMargin: {
+                        horizontal: 15,
+                        vertical: 10
+                    }
+                },
+                fill: {
+                    opacity: 1
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return "₱" + val.toLocaleString()
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#profitChart"), options);
+            chart.render();
+        });
+    </script>
+}

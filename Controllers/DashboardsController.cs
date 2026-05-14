@@ -17,11 +17,21 @@ namespace H2BIG.Controllers
             ViewBag.TotalDebt = _db.ExecuteScalar("SELECT COALESCE(SUM(bottle_debt), 0) FROM customers") ?? 0;
             ViewBag.TopDebtors = _db.ExecuteQuery("SELECT id, name, contact, bottle_debt FROM customers WHERE bottle_debt > 0 ORDER BY bottle_debt DESC LIMIT 5");
 
-            // Fetch recent transactions for the bottom table
-            ViewBag.RecentTransactions = _db.ExecuteQuery(@"
+            // Fetch recent Delivery transactions
+            ViewBag.RecentDeliveries = _db.ExecuteQuery(@"
                 SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
                 FROM sales s
                 LEFT JOIN customers c ON s.customer_id = c.id
+                WHERE s.type = 'Delivery'
+                ORDER BY s.date_time DESC
+                LIMIT 5");
+
+            // Fetch recent Walk-In transactions
+            ViewBag.RecentWalkIns = _db.ExecuteQuery(@"
+                SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.id
+                WHERE s.type = 'Walk-In'
                 ORDER BY s.date_time DESC
                 LIMIT 5");
 
@@ -40,6 +50,24 @@ namespace H2BIG.Controllers
 
             ViewBag.SalesToday = _db.ExecuteScalar("SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE DATE(date_time) = CURRENT_DATE()") ?? 0;
             ViewBag.PendingDeliveries = _db.ExecuteScalar("SELECT COUNT(*) FROM deliveries WHERE status = 'Pending'") ?? 0;
+
+            // Fetch recent Delivery transactions
+            ViewBag.RecentDeliveries = _db.ExecuteQuery(@"
+                SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.id
+                WHERE s.type = 'Delivery'
+                ORDER BY s.date_time DESC
+                LIMIT 5");
+
+            // Fetch recent Walk-In transactions
+            ViewBag.RecentWalkIns = _db.ExecuteQuery(@"
+                SELECT s.id, s.date_time, COALESCE(c.name, 'Walk-In Customer') as CustomerName, s.total_amount, s.type
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.id
+                WHERE s.type = 'Walk-In'
+                ORDER BY s.date_time DESC
+                LIMIT 5");
 
             return View();
         }

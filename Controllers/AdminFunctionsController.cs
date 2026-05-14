@@ -100,6 +100,34 @@ namespace H2BIG.Controllers
             
             ViewBag.DebtAlerts = debtAlerts;
 
+            // Chart Data: YTD Profit & Loss
+            var chartDataDt = _db.ExecuteQuery(@"
+                SELECT 
+                    m.month,
+                    (SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE MONTH(date_time) = m.month AND YEAR(date_time) = YEAR(CURRENT_DATE())) as Revenue,
+                    (SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE MONTH(date) = m.month AND YEAR(date) = YEAR(CURRENT_DATE())) as Expenses
+                FROM (
+                    SELECT 1 as month UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 
+                    UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 
+                    UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12
+                ) m
+                ORDER BY m.month;
+            ");
+
+            var months = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+            var revenues = new List<decimal>();
+            var expenses = new List<decimal>();
+
+            foreach (DataRow row in chartDataDt.Rows)
+            {
+                revenues.Add(Convert.ToDecimal(row["Revenue"]));
+                expenses.Add(Convert.ToDecimal(row["Expenses"]));
+            }
+
+            ViewBag.ChartMonths = System.Text.Json.JsonSerializer.Serialize(months);
+            ViewBag.ChartRevenues = System.Text.Json.JsonSerializer.Serialize(revenues);
+            ViewBag.ChartExpenses = System.Text.Json.JsonSerializer.Serialize(expenses);
+
             return View();
         }
     }
