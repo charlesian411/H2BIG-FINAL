@@ -53,13 +53,44 @@ namespace H2BIG.Controllers
             var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartJson);
             if (cartItems == null || cartItems.Count == 0) return Json(new { success = false, message = "Cart is empty" });
 
+            // ENFORCE 20 BOTTLE LIMIT
+            if (type == "Delivery" && riderId.HasValue)
+            {
+                // Calculate bottles in this cart (only items with 'Gallon' in name)
+                int cartBottleCount = 0;
+                foreach (var item in cartItems)
+                {
+                    var prodDt = _db.ExecuteQuery("SELECT name FROM products WHERE id = @pid", new MySqlParameter[] { new MySqlParameter("@pid", item.ProductId) });
+                    if (prodDt.Rows.Count > 0 && prodDt.Rows[0]["name"].ToString().Contains("Gallon"))
+                    {
+                        cartBottleCount += item.Quantity;
+                    }
+                }
+
+                // Get rider's current load
+                var riderDt = _db.ExecuteQuery(@"
+                    SELECT COALESCE(SUM(si.quantity), 0) as current_load
+                    FROM deliveries d
+                    JOIN sale_items si ON d.sale_id = si.sale_id
+                    JOIN products p ON si.product_id = p.id
+                    WHERE d.rider_id = @rid 
+                    AND d.status IN ('Pending', 'Delivered')
+                    AND p.name LIKE '%Gallon%'", new MySqlParameter[] { new MySqlParameter("@rid", riderId.Value) });
+                
+                int currentLoad = Convert.ToInt32(riderDt.Rows[0]["current_load"]);
+                if (currentLoad + cartBottleCount > 20)
+                {
+                    return Json(new { success = false, message = $"Rider capacity exceeded! Current load: {currentLoad} bottles, New load: {cartBottleCount} bottles. Total cannot exceed 20 bottles." });
+                }
+            }
+
             using var connection = _db.GetConnection();
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
             try
             {
-                // 1. Insert into sales
+                // ... (Sale insertion logic) ...
                 string saleQuery = "INSERT INTO sales (customer_id, total_amount, type, staff_id) VALUES (@cid, @total, @type, @sid); SELECT LAST_INSERT_ID();";
                 var saleCmd = new MySqlCommand(saleQuery, connection, transaction);
                 saleCmd.Parameters.AddWithValue("@cid", (customerId == 0 || customerId == null ? DBNull.Value : (object)customerId));
@@ -71,7 +102,6 @@ namespace H2BIG.Controllers
                 // 2. Insert items and update stock
                 foreach (var item in cartItems)
                 {
-                    // Fetch price using same connection/transaction
                     var priceCmd = new MySqlCommand("SELECT price FROM products WHERE id = @pid", connection, transaction);
                     priceCmd.Parameters.AddWithValue("@pid", item.ProductId);
                     decimal price = Convert.ToDecimal(priceCmd.ExecuteScalar());
@@ -84,7 +114,6 @@ namespace H2BIG.Controllers
                     itemCmd.Parameters.AddWithValue("@sub", subtotal);
                     itemCmd.ExecuteNonQuery();
 
-                    // Only decrease stock for Deliveries (Walk-ins bring their own bottles)
                     if (type != "Walk-In")
                     {
                         var stockCmd = new MySqlCommand("UPDATE products SET stock = stock - @qty WHERE id = @pid", connection, transaction);
@@ -107,14 +136,11 @@ namespace H2BIG.Controllers
                 if (customerId > 0)
                 {
                     int totalQty = cartItems.Sum(i => i.Quantity);
-                    
-                    // Update customer debt first
                     var debtCmd = new MySqlCommand("UPDATE customers SET bottle_debt = bottle_debt + @qty WHERE id = @cid", connection, transaction);
                     debtCmd.Parameters.AddWithValue("@qty", totalQty);
                     debtCmd.Parameters.AddWithValue("@cid", customerId);
                     debtCmd.ExecuteNonQuery();
 
-                    // Now insert into ledger with the updated balance
                     var ledgerCmd = new MySqlCommand(@"
                         INSERT INTO bottle_ledger (customer_id, bottles_out, bottles_in, balance, transaction_id) 
                         VALUES (@cid, @qty, 0, (SELECT bottle_debt FROM customers WHERE id = @cid), @sid)", connection, transaction);
@@ -126,18 +152,17 @@ namespace H2BIG.Controllers
 
                 transaction.Commit();
                 
-                if (type == "Walk-In")
-                {
-                    return RedirectToAction("Receipt", new { id = saleId });
-                }
-                
-                TempData["Success"] = "Sale processed successfully!";
-                return RedirectToAction("Index", "Delivery");
+                return Json(new { 
+                    success = true, 
+                    saleId = saleId, 
+                    type = type,
+                    redirectUrl = type == "Walk-In" ? Url.Action("Receipt", new { id = saleId }) : Url.Action("Index", "Delivery")
+                });
             }
             catch (Exception ex)
             {
                 transaction.Rollback();
-                return RedirectToAction("POS", new { error = "Transaction failed: " + ex.Message });
+                return Json(new { success = false, message = "Transaction failed: " + ex.Message });
             }
         }
 

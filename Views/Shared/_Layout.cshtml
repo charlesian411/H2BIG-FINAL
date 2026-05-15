@@ -114,14 +114,14 @@
         <!-- SideNavBar (Web Only) -->
         <nav class="hidden md:flex flex-col h-full py-stack-md shrink-0 bg-surface-container-low dark:bg-inverse-surface text-primary dark:text-primary-fixed font-label-bold text-label-bold border-r border-outline-variant dark:border-outline docked left-0 h-screen w-64 z-10 transition-all duration-100 ease-in-out">
             <div class="px-gutter mb-stack-md">
-                <div class="flex items-center gap-stack-sm">
+                <a asp-controller="@role" asp-action="Dashboard" class="flex items-center gap-stack-sm hover:opacity-80 transition-opacity">
                     <div class="w-12 h-12 rounded-DEFAULT overflow-hidden flex items-center justify-center">
                         <img src="~/images/h2big_logo.png" alt="H2BIG Logo" class="w-full h-full object-contain" />
                     </div>
                     <div>
                         <h1 class="font-display-sm text-display-sm font-black text-primary dark:text-primary-fixed tracking-tight">H2BIG</h1>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="flex-1 overflow-y-auto px-unit">
                 <ul class="space-y-unit">
@@ -224,10 +224,10 @@
             <header class="flex justify-between items-center px-gutter py-unit h-14 w-full bg-surface dark:bg-inverse-surface text-primary dark:text-primary-fixed font-body-base text-body-base border-b border-outline-variant dark:border-outline docked full-width top-0 z-10 shrink-0 md:hidden">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-primary cursor-pointer" data-icon="menu">menu</span>
-                    <div class="flex items-center gap-2">
+                    <a asp-controller="@role" asp-action="Dashboard" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <img src="~/images/h2big_logo.png" alt="H2BIG Logo" class="w-8 h-8 object-contain" />
                         <span class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed">H2BIG</span>
-                    </div>
+                    </a>
                 </div>
             </header>
         }

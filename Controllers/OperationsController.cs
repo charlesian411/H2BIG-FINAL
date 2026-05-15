@@ -136,15 +136,30 @@ namespace H2BIG.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Admin" && role != "Staff") return Unauthorized();
 
-            // Validate status to prevent random updates
             if (status != "Completed" && status != "Cancelled") return BadRequest("Invalid status update.");
+
+            // Get sale_id for the delivery
+            var dtDelivery = _db.ExecuteQuery("SELECT sale_id FROM deliveries WHERE id = @id", new MySqlParameter[] { new MySqlParameter("@id", deliveryId) });
+            if (dtDelivery.Rows.Count == 0) return NotFound();
+            int saleId = Convert.ToInt32(dtDelivery.Rows[0]["sale_id"]);
+
+            if (status == "Cancelled")
+            {
+                // Restore inventory: Add quantities back to products
+                string restoreQuery = @"
+                    UPDATE products p
+                    JOIN sale_items si ON p.id = si.product_id
+                    SET p.stock = p.stock + si.quantity
+                    WHERE si.sale_id = @sid";
+                _db.ExecuteNonQuery(restoreQuery, new MySqlParameter[] { new MySqlParameter("@sid", saleId) });
+            }
 
             _db.ExecuteNonQuery("UPDATE deliveries SET status = @status WHERE id = @id", new MySqlParameter[] { 
                 new MySqlParameter("@status", status),
                 new MySqlParameter("@id", deliveryId) 
             });
 
-            TempData["Success"] = $"Order {status.ToLower()} successfully.";
+            TempData["Success"] = $"Order {status.ToLower()} successfully. {(status == "Cancelled" ? "Inventory restored." : "")}";
             return RedirectToAction("Index");
         }
 

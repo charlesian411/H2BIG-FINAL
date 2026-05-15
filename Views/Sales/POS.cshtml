@@ -189,7 +189,7 @@
                                 <div>
                                     <div class="font-label-bold text-on-surface">@row["fullname"]</div>
                                     <div class="text-[11px] @(isFull ? "text-error" : "text-[#137333]") font-bold uppercase tracking-wider">
-                                        @(isFull ? "Unavailable (Full)" : "Available")
+                                        @(isFull ? "Full - Cannot take more" : "Available")
                                     </div>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@
                                 </div>
                                 @if (!isFull)
                                 {
-                                    <span class="text-[9px] text-outline uppercase font-label-bold">@remaining left</span>
+                                    <span class="text-[9px] text-outline uppercase font-label-bold">Can carry @remaining more</span>
                                 }
                             </div>
                         </div>
@@ -219,11 +219,70 @@
     </div>
 </div>
 
+<!-- Error Modal -->
+<div id="errorModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest border border-error/20 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-center">
+        <div class="p-8">
+            <div class="w-16 h-16 bg-error-container text-error rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-4xl">warning</span>
+            </div>
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Operation Blocked</h3>
+            <p id="errorMessage" class="text-on-surface-variant font-body-base">Rider capacity exceeded.</p>
+        </div>
+        <div class="p-stack-md bg-surface-container-low border-t border-outline-variant">
+            <button onclick="closeErrorModal()" class="w-full py-2.5 bg-surface border border-outline-variant rounded-lg font-label-bold hover:bg-surface-container transition-colors">Understood</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         let cart = {};
         let currentOrderType = "Walk-In";
 
+        function closeErrorModal() {
+            document.getElementById('errorModal').classList.add('hidden');
+        }
+
+        function showError(msg) {
+            document.getElementById('errorMessage').innerText = msg;
+            document.getElementById('errorModal').classList.remove('hidden');
+        }
+
+        // ... existing functions (setOrderType, searchCustomers, selectCustomer, handleProcessSale, openRiderModal, selectRider, closeRiderModal, filterProducts, addToCart, updateQty, removeItem, renderCart, validateOrder) ...
+
+        async function confirmRiderSelection() {
+            const btn = document.getElementById('confirmRiderBtn');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Processing...';
+
+            const formData = new FormData(document.getElementById('posForm'));
+            
+            try {
+                const response = await fetch('@Url.Action("Process", "Sales")', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirectUrl;
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    closeRiderModal();
+                    showError(result.message);
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                showError("A connection error occurred. Please try again.");
+            }
+        }
+        
+        // Re-declaring the rest of the existing script functions to ensure they remain
         function setOrderType(type) {
             currentOrderType = type;
             document.getElementById('orderTypeInput').value = type;
@@ -231,13 +290,11 @@
             const wBtn = document.getElementById('tabWalkIn');
             const dBtn = document.getElementById('tabDelivery');
             const searchContainer = document.getElementById('customerSearchContainer');
-            const details = document.getElementById('customerDetails');
             
             if(type === 'Walk-In') {
                 wBtn.className = "px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all";
                 dBtn.className = "px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all";
                 searchContainer.classList.add('hidden');
-                // Reset customer to Guest for Walk-In
                 selectCustomer(0, "Walk-In Customer", "");
             } else {
                 dBtn.className = "px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all";
@@ -251,47 +308,26 @@
         function searchCustomers(query) {
             const results = document.getElementById('customerResults');
             const items = results.querySelectorAll('.customer-item');
-            
-            if (query.length < 1) {
-                results.classList.add('hidden');
-                return;
-            }
-
+            if (query.length < 1) { results.classList.add('hidden'); return; }
             let hasResults = false;
             query = query.toLowerCase();
-
             items.forEach(item => {
                 const name = item.querySelector('.customer-name').innerText.toLowerCase();
-                if (name.includes(query)) {
-                    item.style.display = 'block';
-                    hasResults = true;
-                } else {
-                    item.style.display = 'none';
-                }
+                if (name.includes(query)) { item.style.display = 'block'; hasResults = true; } else { item.style.display = 'none'; }
             });
-
-            if (hasResults) {
-                results.classList.remove('hidden');
-            } else {
-                results.classList.add('hidden');
-            }
+            if (hasResults) results.classList.remove('hidden'); else results.classList.add('hidden');
         }
 
         function selectCustomer(id, name, address) {
             document.getElementById('customerIdInput').value = id;
             document.getElementById('displayCustomerName').innerText = name;
-            
             const details = document.getElementById('customerDetails');
             const addressEl = document.getElementById('displayCustomerAddress');
-            
             if (id !== 0) {
                 document.getElementById('customerSearchInput').value = name;
                 addressEl.innerText = address || "No Address Provided";
                 details.classList.remove('hidden');
-            } else {
-                details.classList.add('hidden');
-            }
-            
+            } else { details.classList.add('hidden'); }
             document.getElementById('customerResults').classList.add('hidden');
             validateOrder();
         }
@@ -300,26 +336,21 @@
             if (currentOrderType === 'Delivery') {
                 e.preventDefault();
                 openRiderModal();
+            } else {
+                // For walk-ins, we also want to use AJAX now for consistency
+                e.preventDefault();
+                confirmRiderSelection(); // Reusing the same AJAX logic
             }
         }
 
-        function openRiderModal() {
-            document.getElementById('riderModal').classList.remove('hidden');
-        }
+        function openRiderModal() { document.getElementById('riderModal').classList.remove('hidden'); }
+        function closeRiderModal() { document.getElementById('riderModal').classList.add('hidden'); }
 
         function selectRider(id, el) {
             document.getElementById('riderIdInput').value = id;
             document.querySelectorAll('#riderList > div').forEach(div => div.classList.remove('border-primary', 'bg-primary-container/20'));
             el.classList.add('border-primary', 'bg-primary-container/20');
             document.getElementById('confirmRiderBtn').disabled = false;
-        }
-
-        function confirmRiderSelection() {
-            document.getElementById('posForm').submit();
-        }
-
-        function closeRiderModal() {
-            document.getElementById('riderModal').classList.add('hidden');
         }
 
         function filterProducts(query) {
@@ -332,11 +363,8 @@
         }
 
         function addToCart(id, name, price, stock) {
-            if (cart[id]) {
-                if (cart[id].qty < stock) cart[id].qty++;
-            } else {
-                cart[id] = { id, name, price, qty: 1 };
-            }
+            if (cart[id]) { if (cart[id].qty < stock) cart[id].qty++; } 
+            else { cart[id] = { id, name, price, qty: 1 }; }
             renderCart();
         }
 
@@ -347,10 +375,7 @@
             renderCart();
         }
 
-        function removeItem(id) {
-            delete cart[id];
-            renderCart();
-        }
+        function removeItem(id) { delete cart[id]; renderCart(); }
 
         function renderCart() {
             const container = document.getElementById('cartItems');
@@ -360,28 +385,18 @@
             const jsonInput = document.getElementById('cartJsonInput');
 
             if (Object.keys(cart).length === 0) {
-                container.innerHTML = `
-                    <div class="h-full flex items-center justify-center text-outline opacity-40 flex-col gap-4">
-                        <span class="material-symbols-outlined text-6xl">shopping_cart</span>
-                        <p class="font-body-base">Empty Cart</p>
-                    </div>`;
-                subtotalEl.innerText = "₱0.00";
-                totalEl.innerText = "₱0.00";
-                totalInput.value = "0";
-                validateOrder();
-                return;
+                container.innerHTML = `<div class="h-full flex items-center justify-center text-outline opacity-40 flex-col gap-4"><span class="material-symbols-outlined text-6xl">shopping_cart</span><p class="font-body-base">Empty Cart</p></div>`;
+                subtotalEl.innerText = "₱0.00"; totalEl.innerText = "₱0.00"; totalInput.value = "0"; validateOrder(); return;
             }
 
             container.innerHTML = '';
             let total = 0;
             const itemsList = [];
-
             for (const id in cart) {
                 const item = cart[id];
                 const subtotal = item.price * item.qty;
                 total += subtotal;
                 itemsList.push({ ProductId: item.id, Quantity: item.qty });
-
                 container.innerHTML += `
                     <div class="flex items-center justify-between border-b border-outline-variant py-4 px-2 hover:bg-surface-container-low transition-colors group">
                         <div class="flex-1 pr-4">
@@ -394,15 +409,11 @@
                                 <span class="w-10 text-center font-code-data text-code-data font-bold">${item.qty}</span>
                                 <button type="button" onclick="updateQty(${id}, 1)" class="w-8 h-8 flex items-center justify-center hover:bg-surface-variant text-outline border-l border-outline-variant transition-colors"><span class="material-symbols-outlined text-[18px]">add</span></button>
                             </div>
-                            <div class="w-20 text-right">
-                                <span class="font-code-data text-code-data font-bold text-on-surface">₱${subtotal.toFixed(2)}</span>
-                            </div>
+                            <div class="w-20 text-right"><span class="font-code-data text-code-data font-bold text-on-surface">₱${subtotal.toFixed(2)}</span></div>
                             <button type="button" onclick="removeItem(${id})" class="text-error hover:bg-error-container p-2 rounded transition-colors opacity-0 group-hover:opacity-100"><span class="material-symbols-outlined text-[20px]">delete</span></button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
-
             subtotalEl.innerText = `₱${total.toFixed(2)}`;
             totalEl.innerText = `₱${total.toFixed(2)}`;
             totalInput.value = total;
@@ -414,12 +425,8 @@
             const customerId = document.getElementById('customerIdInput').value;
             const total = parseFloat(document.getElementById('totalAmountInput').value);
             const submitBtn = document.getElementById('submitBtn');
-            
             let isValid = total > 0;
-            if (currentOrderType === 'Delivery' && customerId === "0") {
-                isValid = false;
-            }
-            
+            if (currentOrderType === 'Delivery' && customerId === "0") { isValid = false; }
             submitBtn.disabled = !isValid;
         }
     </script>
