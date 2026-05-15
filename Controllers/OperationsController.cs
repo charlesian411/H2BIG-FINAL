@@ -68,34 +68,91 @@ namespace H2BIG.Controllers
             var userId = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(role)) return RedirectToAction("Login", "Auth");
 
-            string query = @"
-                SELECT d.*, s.total_amount, s.date_time, c.name as CustomerName, c.address, r.fullname as RiderName
+            // Base query for active deliveries
+            string activeQuery = @"
+                SELECT d.*, s.total_amount, s.date_time, c.name as CustomerName, c.address, r.fullname as RiderName,
+                       CASE WHEN rem.id IS NOT NULL THEN 1 ELSE 0 END as HasRemittance,
+                       (SELECT GROUP_CONCAT(CONCAT(si.quantity, 'x ', p.name) SEPARATOR ', ')
+                        FROM sale_items si
+                        JOIN products p ON si.product_id = p.id
+                        WHERE si.sale_id = d.sale_id) as OrderItems
                 FROM deliveries d
                 JOIN sales s ON d.sale_id = s.id
                 JOIN customers c ON s.customer_id = c.id
-                JOIN users r ON d.rider_id = r.id";
+                JOIN users r ON d.rider_id = r.id
+                LEFT JOIN remittances rem ON d.id = rem.delivery_id";
 
             if (role == "Rider")
             {
-                query += " WHERE d.rider_id = @rid";
+                activeQuery += " WHERE d.rider_id = @rid AND d.status IN ('Pending', 'Delivered')";
+            }
+            else
+            {
+                // Admin/Staff see only PENDING or DELIVERED in active view
+                activeQuery += " WHERE d.status IN ('Pending', 'Delivered')";
             }
 
-            var dt = _db.ExecuteQuery(query, role == "Rider" ? new MySqlParameter[] { new MySqlParameter("@rid", userId) } : null);
-            return View(dt);
+            var dtActive = _db.ExecuteQuery(activeQuery, role == "Rider" ? new MySqlParameter[] { new MySqlParameter("@rid", userId) } : null);
+            ViewBag.ActiveDeliveries = dtActive;
+
+            // Fetch History (Completed & Cancelled) only for Admin/Staff
+            if (role != "Rider")
+            {
+                string historyQuery = @"
+                    SELECT d.*, s.total_amount, s.date_time, c.name as CustomerName, c.address, r.fullname as RiderName,
+                           (SELECT GROUP_CONCAT(CONCAT(si.quantity, 'x ', p.name) SEPARATOR ', ')
+                            FROM sale_items si
+                            JOIN products p ON si.product_id = p.id
+                            WHERE si.sale_id = d.sale_id) as OrderItems
+                    FROM deliveries d
+                    JOIN sales s ON d.sale_id = s.id
+                    JOIN customers c ON s.customer_id = c.id
+                    JOIN users r ON d.rider_id = r.id
+                    WHERE d.status IN ('Completed', 'Cancelled')
+                    ORDER BY s.date_time DESC";
+                ViewBag.History = _db.ExecuteQuery(historyQuery);
+            }
+
+            return View();
         }
+
+        [Obsolete("Use Index with combined view")]
+        public IActionResult History() => RedirectToAction("Index");
 
         [HttpPost]
         public IActionResult MarkAsDelivered(int deliveryId)
         {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Rider") return Unauthorized();
+
             _db.ExecuteNonQuery("UPDATE deliveries SET status = 'Delivered' WHERE id = @id", new MySqlParameter[] { new MySqlParameter("@id", deliveryId) });
+            TempData["Success"] = "Delivery marked as delivered.";
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public IActionResult CancelDelivery(int deliveryId)
+        public IActionResult UpdateStatus(int deliveryId, string status)
         {
-            _db.ExecuteNonQuery("UPDATE deliveries SET status = 'Cancelled' WHERE id = @id", new MySqlParameter[] { new MySqlParameter("@id", deliveryId) });
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Admin" && role != "Staff") return Unauthorized();
+
+            // Validate status to prevent random updates
+            if (status != "Completed" && status != "Cancelled") return BadRequest("Invalid status update.");
+
+            _db.ExecuteNonQuery("UPDATE deliveries SET status = @status WHERE id = @id", new MySqlParameter[] { 
+                new MySqlParameter("@status", status),
+                new MySqlParameter("@id", deliveryId) 
+            });
+
+            TempData["Success"] = $"Order {status.ToLower()} successfully.";
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult FinalizeOrder(int deliveryId)
+        {
+            // Keeping this for backward compatibility with existing forms if needed, but routing to UpdateStatus logic
+            return UpdateStatus(deliveryId, "Completed");
         }
     }
 }

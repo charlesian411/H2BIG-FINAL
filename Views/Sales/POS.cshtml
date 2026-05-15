@@ -13,13 +13,19 @@
     .product-card:hover { border-color: #00488d; }
 </style>
 
+<!-- Page Header -->
+<div class="flex-none mb-stack-md">
+    <h1 class="font-headline-md text-headline-md font-bold text-on-surface uppercase">POS / SALES</h1>
+    <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Manage walk-in sales and delivery assignments.</p>
+</div>
+
 <div class="flex-1 flex gap-gutter p-container-padding overflow-hidden h-full">
     <!-- Left Side: Product Selection -->
     <section class="flex-1 flex flex-col gap-stack-md h-full">
-        <!-- Customer Context Bar (Merged Action Bar) -->
-        <div class="win-panel p-stack-sm flex items-center justify-between shadow-sm relative z-[60]">
+        <!-- Customer Context Bar (Dashed/Minimal Border) -->
+        <div class="win-panel p-stack-sm flex items-center justify-between shadow-sm relative z-[60] !border-none !bg-transparent !shadow-none">
             <div class="flex items-center w-full gap-stack-md">
-                <div class="flex items-center gap-[2px] p-[2px] bg-surface-container-low win-border rounded shrink-0">
+                <div class="flex items-center gap-[2px] p-[2px] bg-surface-container-low border border-outline-variant rounded shrink-0">
                     <button type="button" onclick="setOrderType('Walk-In')" id="tabWalkIn" class="px-stack-sm py-1 bg-surface shadow-sm rounded font-label-bold text-label-bold text-primary border border-outline-variant transition-all">Walk-in</button>
                     <button type="button" onclick="setOrderType('Delivery')" id="tabDelivery" class="px-stack-sm py-1 text-on-surface-variant hover:bg-surface-variant rounded font-label-bold text-label-bold transition-all">Delivery</button>
                 </div>
@@ -170,17 +176,33 @@
                 {
                     foreach (System.Data.DataRow row in riders.Rows)
                     {
-                        <div onclick="selectRider(@row["id"], this)" class="p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-all flex items-center justify-between group">
+                        var currentLoad = Convert.ToInt32(row["current_load"]);
+                        var isFull = currentLoad >= 20;
+                        var remaining = 20 - currentLoad;
+
+                        <div onclick="@(isFull ? "" : $"selectRider({row["id"]}, this)")" 
+                             class="p-4 border border-outline-variant rounded-lg @(isFull ? "bg-surface-container-high opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-surface-container-low transition-all") flex items-center justify-between group">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary">
+                                <div class="w-10 h-10 rounded-full @(isFull ? "bg-outline" : "bg-primary-container") flex items-center justify-center @(isFull ? "text-on-surface-variant" : "text-primary")">
                                     <span class="material-symbols-outlined">person</span>
                                 </div>
                                 <div>
                                     <div class="font-label-bold text-on-surface">@row["fullname"]</div>
-                                    <div class="text-[11px] text-[#137333] font-bold">Available</div>
+                                    <div class="text-[11px] @(isFull ? "text-error" : "text-[#137333]") font-bold uppercase tracking-wider">
+                                        @(isFull ? "Unavailable (Full)" : "Available")
+                                    </div>
                                 </div>
                             </div>
-                            <span class="material-symbols-outlined text-outline group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all">check_circle</span>
+                            <div class="flex flex-col items-end gap-1">
+                                <div class="flex items-center gap-1 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[18px]">water_bottle</span>
+                                    <span class="font-code-data text-code-data @(isFull ? "text-error font-bold" : "")">@currentLoad/20</span>
+                                </div>
+                                @if (!isFull)
+                                {
+                                    <span class="text-[9px] text-outline uppercase font-label-bold">@remaining left</span>
+                                }
+                            </div>
                         </div>
                     }
                 }

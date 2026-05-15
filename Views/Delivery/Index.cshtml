@@ -1,83 +1,298 @@
-@model System.Data.DataTable
+@using System.Data
 @{
     ViewData["Title"] = "Deliveries";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var userRole = Context.Session.GetString("UserRole");
+    var activeDeliveries = ViewBag.ActiveDeliveries as DataTable;
+    var history = ViewBag.History as DataTable;
 }
 
-<!-- Page Header -->
-<div class="flex items-end justify-between mb-stack-md">
-    <div>
-        <h1 class="font-headline-md text-headline-md font-bold text-on-surface">DELIVERIES</h1>
-        <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Track and update ongoing delivery statuses.</p>
+<div class="flex flex-col h-full">
+    <!-- Header & Tabs -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-stack-md border-b border-outline-variant pb-4 mb-stack-md">
+        <div>
+            <h1 class="font-headline-md text-headline-md font-bold text-on-surface uppercase tracking-wider">Deliveries</h1>
+            <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Track and manage your water delivery fleet.</p>
+        </div>
+        
+        @if (userRole != "Rider")
+        {
+            <div class="flex bg-surface-container-low p-1 rounded-lg border border-outline-variant">
+                <button onclick="switchTab('active')" id="tabBtnActive" class="px-6 py-2 rounded-md font-label-bold text-label-bold transition-all bg-surface text-primary shadow-sm border border-outline-variant">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                        Active Deliveries
+                    </div>
+                </button>
+                <button onclick="switchTab('history')" id="tabBtnHistory" class="px-6 py-2 rounded-md font-label-bold text-label-bold transition-all text-on-surface-variant hover:bg-surface-variant">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">history</span>
+                        Delivery History
+                    </div>
+                </button>
+            </div>
+        }
+    </div>
+
+    <!-- Active Deliveries Content -->
+    <div id="activeContent" class="animate-in fade-in duration-300">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            @if (activeDeliveries != null)
+            {
+                foreach (DataRow row in activeDeliveries.Rows)
+                {
+                    var status = row["status"].ToString();
+                    var statusColor = status == "Pending" ? "bg-orange-100 text-orange-600 border-orange-200" : 
+                                  status == "Delivered" ? "bg-blue-100 text-blue-600 border-blue-200" : 
+                                  "bg-red-100 text-red-600 border-red-200";
+
+                    <div class="bg-surface border border-outline-variant rounded-DEFAULT shadow-sm p-stack-md flex flex-col h-full hover:shadow-md transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex flex-col">
+                                <span class="font-label-bold text-[10px] text-outline uppercase tracking-widest">Delivery #@row["id"]</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @if (userRole == "Admin" || userRole == "Staff")
+                                {
+                                    <a href="@Url.Action("Receipt", "Sales", new { id = row["sale_id"] })" target="_blank" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-outline hover:text-primary transition-all" title="Print Receipt">
+                                        <span class="material-symbols-outlined text-[20px]">print</span>
+                                    </a>
+                                }
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border @statusColor">@status</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="font-headline-md text-headline-md text-primary font-bold">@row["CustomerName"]</h3>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                @row["address"]
+                            </p>
+                        </div>
+
+                        <div class="bg-surface-container-low border border-outline-variant/50 rounded p-3 mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-code-data text-body-sm text-on-surface">Sale #@row["sale_id"]</span>
+                                <span class="font-bold text-primary">₱@Convert.ToDecimal(row["total_amount"]).ToString("N2")</span>
+                            </div>
+                            <div class="text-[11px] text-on-surface-variant font-medium italic border-t border-outline-variant/30 pt-1 mt-1">
+                                @row["OrderItems"]
+                            </div>
+                        </div>
+
+                        <div class="text-body-sm text-outline flex items-center gap-1 mb-4">
+                            <span class="material-symbols-outlined text-[16px]">person</span>
+                            Rider: <span class="font-bold text-on-surface">@row["RiderName"]</span>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-outline-variant flex gap-2">
+                            @if (status == "Pending" && userRole == "Rider")
+                            {
+                                var hasRemittance = Convert.ToInt32(row["HasRemittance"]) == 1;
+
+                                <form asp-action="MarkAsDelivered" method="post" class="flex-1">
+                                    <input type="hidden" name="deliveryId" value="@row["id"]" />
+                                    <button type="submit" @(hasRemittance ? "" : "disabled") class="w-full @(hasRemittance ? "bg-[#10b981] hover:bg-[#059669] text-white" : "bg-surface-container-high text-outline cursor-not-allowed") font-label-bold py-2 rounded flex items-center justify-center gap-1 transition-colors shadow-sm">
+                                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                                        Mark Delivered
+                                    </button>
+                                </form>
+
+                                @if (hasRemittance)
+                                {
+                                    <button disabled class="flex-1 w-full bg-surface-container-high text-outline font-label-bold py-2 rounded flex items-center justify-center gap-1 cursor-not-allowed">
+                                        <span class="material-symbols-outlined text-[18px]">payments</span>
+                                        Remitted
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Remittance", "Rider", new { deliveryId = row["id"] })" class="flex-1 w-full bg-primary hover:bg-primary-container text-on-primary font-label-bold py-2 rounded flex items-center justify-center gap-1 transition-colors shadow-sm">
+                                        <span class="material-symbols-outlined text-[18px]">payments</span>
+                                        Remittance
+                                    </a>
+                                }
+                            }
+                            else if (status == "Delivered" && (userRole == "Admin" || userRole == "Staff"))
+                            {
+                                <button onclick="openFinalizeModal(@row["id"], '@row["CustomerName"]', @row["total_amount"])" class="w-full bg-primary hover:bg-[#003d7a] text-white font-label-bold py-2 rounded flex items-center justify-center gap-1 transition-colors shadow-md">
+                                    <span class="material-symbols-outlined text-[18px]">verified</span>
+                                    Complete Order
+                                </button>
+                            }
+                            else if (status == "Pending" && (userRole == "Admin" || userRole == "Staff"))
+                            {
+                                <form asp-controller="Delivery" asp-action="UpdateStatus" method="post" class="w-full">
+                                    <input type="hidden" name="deliveryId" value="@row["id"]" />
+                                    <input type="hidden" name="status" value="Cancelled" />
+                                    <button type="submit" class="w-full bg-surface border border-error text-error hover:bg-error-container font-label-bold py-2 rounded flex items-center justify-center gap-1 transition-colors">
+                                        <span class="material-symbols-outlined text-[18px]">cancel</span>
+                                        Cancel Order
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            @if (activeDeliveries == null || activeDeliveries.Rows.Count == 0)
+            {
+                <div class="col-span-full py-20 text-center text-outline">
+                    <span class="material-symbols-outlined text-5xl mb-2">local_shipping</span>
+                    <p class="font-body-lg">No active deliveries at the moment.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (userRole != "Rider" && history != null)
+    {
+        <!-- History Content (Hidden by default) -->
+        <div id="historyContent" class="hidden animate-in fade-in duration-300">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-surface-container-low border-b border-outline-variant">
+                            <tr>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">ID</th>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Date & Time</th>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Customer</th>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Items</th>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Rider</th>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Amount</th>
+                                <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant">
+                            @foreach (DataRow row in history.Rows)
+                            {
+                                var status = row["status"].ToString();
+                                var isCancelled = status == "Cancelled";
+                                <tr class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-4 px-6 font-code-data text-code-data text-on-surface">#@row["id"]</td>
+                                    <td class="py-4 px-6">
+                                        <div class="font-body-sm text-body-sm text-on-surface">@Convert.ToDateTime(row["date_time"]).ToString("MMM dd, yyyy")</div>
+                                        <div class="font-label-bold text-[10px] text-outline uppercase">@Convert.ToDateTime(row["date_time"]).ToString("hh:mm tt")</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="font-label-bold text-label-bold text-primary">@row["CustomerName"]</div>
+                                        <div class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                            @row["address"]
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-[11px] text-on-surface-variant italic max-w-xs truncate">@row["OrderItems"]</div>
+                                    </td>
+                                    <td class="py-4 px-6 font-body-sm text-body-sm text-on-surface-variant">@row["RiderName"]</td>
+                                    <td class="py-4 px-6 font-bold text-on-surface">₱@Convert.ToDecimal(row["total_amount"]).ToString("N2")</td>
+                                    <td class="py-4 px-6">
+                                        @if (isCancelled)
+                                        {
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-50 text-error border border-error/20 text-[10px] font-bold uppercase tracking-wide">
+                                                <span class="material-symbols-outlined text-[14px]">cancel</span>
+                                                Cancelled
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#E8F5E9] text-[#137333] border border-[#137333]/20 text-[10px] font-bold uppercase tracking-wide">
+                                                <span class="material-symbols-outlined text-[14px]">verified</span>
+                                                Completed
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Finalize Order Modal -->
+<div id="finalizeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-stack-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+            <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">verified</span>
+                Complete Order
+            </h3>
+            <button onclick="closeFinalizeModal()" class="text-outline hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form asp-controller="Delivery" asp-action="UpdateStatus" method="post">
+            <div class="p-stack-md space-y-4">
+                <input type="hidden" name="deliveryId" id="modalDeliveryId" />
+                <input type="hidden" name="status" value="Completed" />
+                
+                <div class="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <div class="text-[11px] text-outline uppercase font-label-bold mb-1">Confirming Payment For</div>
+                    <div class="font-headline-sm text-primary font-bold" id="modalCustomerName">--</div>
+                    <div class="text-xl font-code-data text-on-surface mt-1" id="modalTotalAmount">₱0.00</div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+                        <input type="checkbox" required class="mt-1 w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary" />
+                        <div class="font-body-sm text-body-sm text-on-surface-variant">
+                            I confirm that the <span class="font-bold text-on-surface">cash payment</span> collected by the rider is correct and in hand.
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+                        <input type="checkbox" required class="mt-1 w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary" />
+                        <div class="font-body-sm text-body-sm text-on-surface-variant">
+                            I confirm that the <span class="font-bold text-on-surface">bottle count</span> returned by the rider matches the declaration.
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="p-stack-md bg-surface-container-low border-t border-outline-variant flex gap-3">
+                <button type="button" onclick="closeFinalizeModal()" class="flex-1 px-4 py-2.5 border border-outline-variant rounded-lg font-label-bold hover:bg-surface-container transition-colors">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-bold hover:bg-[#003d7a] transition-all shadow-md flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">verified</span>
+                    Complete Order
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-stack-md">
-    @foreach (System.Data.DataRow row in Model.Rows)
-    {
-        var status = row["status"].ToString();
-        var statusColor = status == "Delivered" ? "bg-[#E8F5E9] text-[#2E7D32]" : 
-                          status == "Cancelled" ? "bg-[#FCE8E6] text-[#C5221F]" : 
-                          "bg-[#FFF8E1] text-[#F57F17]";
+@section Scripts {
+    <script>
+        function switchTab(tab) {
+            const activeContent = document.getElementById('activeContent');
+            const historyContent = document.getElementById('historyContent');
+            const btnActive = document.getElementById('tabBtnActive');
+            const btnHistory = document.getElementById('tabBtnHistory');
 
-        <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit shadow-sm relative">
-            <div class="flex justify-between items-start mb-2">
-                <span class="font-label-bold text-label-bold text-outline uppercase">Delivery #@row["id"]</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold @statusColor">@status</span>
-            </div>
-            
-            <div class="mb-4">
-                <h3 class="font-headline-md text-headline-md text-primary font-bold">@row["CustomerName"]</h3>
-                <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
-                    <span class="material-symbols-outlined text-[16px]">location_on</span>
-                    @row["address"]
-                </p>
-            </div>
-
-            <div class="flex justify-between items-center bg-surface-container-low p-2 rounded border border-outline-variant/50 font-body-sm text-body-sm text-on-surface mb-4">
-                <span>Sale #@row["sale_id"]</span>
-                <span class="font-bold text-primary">₱@row["total_amount"]</span>
-            </div>
-
-            @if (userRole == "Admin" || userRole == "Staff")
-            {
-                <div class="text-body-sm text-outline flex items-center gap-1 mb-4">
-                    <span class="material-symbols-outlined text-[16px]">person</span>
-                    Rider: <span class="font-bold text-on-surface">@row["RiderName"]</span>
-                </div>
+            if (tab === 'active') {
+                activeContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+                btnActive.className = "px-6 py-2 rounded-md font-label-bold text-label-bold transition-all bg-surface text-primary shadow-sm border border-outline-variant";
+                btnHistory.className = "px-6 py-2 rounded-md font-label-bold text-label-bold transition-all text-on-surface-variant hover:bg-surface-variant";
+            } else {
+                activeContent.classList.add('hidden');
+                historyContent.classList.remove('hidden');
+                btnHistory.className = "px-6 py-2 rounded-md font-label-bold text-label-bold transition-all bg-surface text-primary shadow-sm border border-outline-variant";
+                btnActive.className = "px-6 py-2 rounded-md font-label-bold text-label-bold transition-all text-on-surface-variant hover:bg-surface-variant";
             }
+        }
 
-            <div class="mt-auto pt-4 border-t border-outline-variant flex gap-2">
-                @if (status == "Pending")
-                {
-                    <form asp-action="MarkAsDelivered" method="post" class="flex-1">
-                        <input type="hidden" name="deliveryId" value="@row["id"]" />
-                        <button type="submit" class="w-full bg-[#10b981] hover:bg-[#059669] text-white font-label-bold py-2 rounded flex items-center justify-center gap-1 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                            Mark Delivered
-                        </button>
-                    </form>
-                    
-                    @if (userRole == "Admin" || userRole == "Staff")
-                    {
-                        <form asp-action="CancelDelivery" method="post">
-                            <input type="hidden" name="deliveryId" value="@row["id"]" />
-                            <button type="submit" class="bg-surface border border-error text-error hover:bg-error-container font-label-bold py-2 px-3 rounded flex items-center justify-center transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">cancel</span>
-                            </button>
-                        </form>
-                    }
-                }
-            </div>
-        </div>
-    }
+        function openFinalizeModal(id, name, amount) {
+            document.getElementById('modalDeliveryId').value = id;
+            document.getElementById('modalCustomerName').innerText = name;
+            document.getElementById('modalTotalAmount').innerText = '₱' + parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2 });
+            document.getElementById('finalizeModal').classList.remove('hidden');
+        }
 
-    @if (Model.Rows.Count == 0)
-    {
-        <div class="col-span-full bg-surface-container border border-outline-variant rounded p-stack-lg text-center text-on-surface-variant">
-            <span class="material-symbols-outlined text-4xl mb-2 text-outline">local_shipping</span>
-            <p>No active deliveries found.</p>
-        </div>
-    }
-</div>
+        function closeFinalizeModal() {
+            document.getElementById('finalizeModal').classList.add('hidden');
+        }
+    </script>
+}

@@ -7,6 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - H2BIG Water Management</title>
+    <link rel="icon" type="image/png" href="~/images/h2big_logo.png" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -106,17 +107,21 @@
     </script>
 </head>
 <body class="h-full bg-surface text-on-surface font-body-base text-body-base flex items-center justify-center relative overflow-hidden">
-    <!-- Decorative Background Elements -->
-    <div class="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
-        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-fixed blur-[120px]"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-primary blur-[150px] opacity-30"></div>
+    <!-- Background Image Container -->
+    <div class="absolute inset-0 z-0">
+        <img src="~/images/h2big_login_bg.png" class="w-full h-full object-cover object-center" alt="Background" />
+        <!-- Sharp Overlay for Legibility -->
+        <div class="absolute inset-0 bg-blue-900/20"></div>
     </div>
     
     <!-- Login Container -->
     <div class="relative z-10 w-full max-w-[420px] px-gutter">
         <!-- Branding Area -->
-        <div class="text-center mb-stack-lg">
-            <h1 class="font-display-lg text-display-lg text-primary mb-unit">H2BIG</h1>
+        <div class="text-center mb-stack-lg flex flex-col items-center">
+            <div class="w-16 h-16 mb-4">
+                <img src="~/images/h2big_logo.png" alt="H2BIG Logo" class="w-full h-full object-contain" />
+            </div>
+            <h1 class="font-display-lg text-display-lg font-black text-primary tracking-tight mb-unit">H2BIG</h1>
             <p class="font-body-base text-body-base text-on-surface-variant">System Authorization Required</p>
         </div>
         
@@ -150,10 +155,7 @@
                 
                 <!-- Password Field -->
                 <div>
-                    <div class="flex justify-between items-center mb-unit">
-                        <label class="block font-label-bold text-label-bold text-on-surface-variant" for="password">Access Code</label>
-                        <a class="font-label-bold text-label-bold text-primary hover:text-primary-container transition-colors" href="#">Recover Access</a>
-                    </div>
+                    <label class="block font-label-bold text-label-bold text-on-surface-variant mb-unit" for="password">Access Code</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-stack-sm flex items-center pointer-events-none">
                             <span class="material-symbols-outlined text-outline text-[18px]">key</span>
@@ -163,7 +165,7 @@
                 </div>
                 
                 <!-- Submit Button -->
-                <button type="submit" class="w-full flex justify-center items-center gap-unit bg-primary-container text-on-primary-container py-stack-sm px-stack-md rounded border border-transparent hover:bg-primary transition-colors font-label-bold text-label-bold mt-stack-lg shadow-[inset_0_-2px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-[1px]">
+                <button type="submit" class="w-full flex justify-center items-center gap-unit bg-primary-container text-white py-stack-sm px-stack-md rounded border border-transparent hover:bg-primary transition-colors font-label-bold text-label-bold mt-stack-lg shadow-[inset_0_-2px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-[1px]">
                     Authenticate
                     <span class="material-symbols-outlined text-[16px]">login</span>
                 </button>
@@ -172,7 +174,6 @@
         
         <!-- Footer Info -->
         <div class="mt-stack-md text-center">
-            <p class="font-body-sm text-body-sm text-outline">H2BIG Ledger v2.1.4 • Connection: Secure</p>
             <p class="font-body-sm text-body-sm text-outline mt-unit">Hydraulics Management Protocol</p>
         </div>
     </div>

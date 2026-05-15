@@ -49,7 +49,12 @@ namespace H2BIG.Controllers
         [HttpPost]
         public IActionResult Delete(int id)
         {
+            // First, delete related sale items to avoid foreign key constraint errors
+            _db.ExecuteNonQuery("DELETE FROM sale_items WHERE product_id = @id", new MySqlParameter[] { new MySqlParameter("@id", id) });
+            
+            // Then delete the product
             _db.ExecuteNonQuery("DELETE FROM products WHERE id = @id", new MySqlParameter[] { new MySqlParameter("@id", id) });
+            
             return RedirectToAction("Index");
         }
     }

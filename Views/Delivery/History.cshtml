@@ -1,0 +1,73 @@
+@model System.Data.DataTable
+@{
+    ViewData["Title"] = "Delivery History";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="flex items-end justify-between mb-stack-md">
+    <div>
+        <h1 class="font-headline-md text-headline-md font-bold text-on-surface uppercase tracking-wider">Delivery History</h1>
+        <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Review all completed and finalized delivery transactions.</p>
+    </div>
+</div>
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                    <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">ID</th>
+                    <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Date & Time</th>
+                    <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Customer</th>
+                    <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Rider</th>
+                    <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Amount</th>
+                    <th class="py-4 px-6 font-label-bold text-label-bold text-outline uppercase tracking-wider text-[11px]">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+                @foreach (System.Data.DataRow row in Model.Rows)
+                {
+                    <tr class="hover:bg-surface-container-low transition-colors group">
+                        <td class="py-4 px-6 font-code-data text-code-data text-on-surface">#@row["id"]</td>
+                        <td class="py-4 px-6">
+                            <div class="font-body-sm text-body-sm text-on-surface">@Convert.ToDateTime(row["date_time"]).ToString("MMM dd, yyyy")</div>
+                            <div class="font-label-bold text-[10px] text-outline uppercase">@Convert.ToDateTime(row["date_time"]).ToString("hh:mm tt")</div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="font-label-bold text-label-bold text-primary">@row["CustomerName"]</div>
+                            <div class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                @row["address"]
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 font-body-sm text-body-sm text-on-surface-variant">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-[16px]">person</span>
+                                </div>
+                                @row["RiderName"]
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 font-bold text-on-surface">₱@Convert.ToDecimal(row["total_amount"]).ToString("N2")</td>
+                        <td class="py-4 px-6">
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#E8F5E9] text-[#137333] border border-[#137333]/20 text-[10px] font-bold uppercase tracking-wide">
+                                <span class="material-symbols-outlined text-[14px]">verified</span>
+                                Completed
+                            </span>
+                        </td>
+                    </tr>
+                }
+
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-on-surface-variant">
+                            <span class="material-symbols-outlined text-4xl mb-2 text-outline">history</span>
+                            <p>No completed deliveries found in history.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

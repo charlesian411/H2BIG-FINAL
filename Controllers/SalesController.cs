@@ -24,8 +24,20 @@ namespace H2BIG.Controllers
             var dtCustomers = _db.ExecuteQuery("SELECT id, name, address FROM customers");
             ViewBag.Customers = dtCustomers;
 
-            // Fetch active riders
-            var dtRiders = _db.ExecuteQuery("SELECT id, fullname FROM users WHERE role = 'Rider' AND status = 'Active'");
+            // Fetch active riders with their current bottle load
+            var dtRiders = _db.ExecuteQuery(@"
+                SELECT u.id, u.fullname, 
+                       COALESCE((
+                           SELECT SUM(si.quantity)
+                           FROM deliveries d
+                           JOIN sale_items si ON d.sale_id = si.sale_id
+                           JOIN products p ON si.product_id = p.id
+                           WHERE d.rider_id = u.id 
+                           AND d.status IN ('Pending', 'Delivered')
+                           AND p.name LIKE '%Gallon%'
+                       ), 0) as current_load
+                FROM users u 
+                WHERE u.role = 'Rider' AND u.status = 'Active'");
             ViewBag.Riders = dtRiders;
 
             return View();
@@ -120,7 +132,7 @@ namespace H2BIG.Controllers
                 }
                 
                 TempData["Success"] = "Sale processed successfully!";
-                return RedirectToAction("POS");
+                return RedirectToAction("Index", "Delivery");
             }
             catch (Exception ex)
             {

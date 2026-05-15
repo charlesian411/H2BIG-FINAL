@@ -6,11 +6,11 @@
     var customer = ViewBag.Customer as System.Data.DataRow;
 }
 
-<!-- Context Header & Global Filter -->
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-stack-md bg-surface p-stack-md border border-outline-variant rounded-DEFAULT shadow-sm mb-stack-md">
+<!-- Page Header & Global Filter -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-stack-md mb-stack-md">
     <div>
-        <h2 class="font-headline-md text-headline-md text-on-surface mb-1">Bottle Ledger Tracking</h2>
-        <p class="font-body-sm text-body-sm text-on-surface-variant">Verify customer container history and manage bottle debt.</p>
+        <h1 class="font-headline-md text-headline-md font-bold text-on-surface uppercase">Bottle Ledger Tracking</h1>
+        <p class="text-on-surface-variant font-body-sm text-body-sm mt-unit">Verify customer container history and manage bottle debt.</p>
     </div>
     <div class="w-full md:w-96 relative">
         <form asp-action="Ledger" method="get" class="relative flex gap-2">
@@ -18,9 +18,9 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span class="material-symbols-outlined text-outline text-sm" data-icon="search">search</span>
                 </div>
-                <input name="customerId" class="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded-DEFAULT leading-5 bg-surface-lowest text-on-surface placeholder-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body-sm text-body-sm transition-all" placeholder="Enter Customer ID..." type="number" required />
+                <input name="customerId" class="block w-full h-10 pl-10 pr-3 py-2 border border-outline-variant rounded-DEFAULT leading-5 bg-surface-container-lowest text-on-surface placeholder-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body-sm text-body-sm transition-all shadow-sm" placeholder="Enter Customer ID..." type="number" required />
             </div>
-            <button type="submit" class="bg-primary text-on-primary px-4 rounded hover:bg-primary-container font-label-bold">View Ledger</button>
+            <button type="submit" class="h-10 bg-primary text-on-primary px-4 rounded hover:bg-primary-container font-label-bold shadow-sm transition-all active:scale-95">View Ledger</button>
         </form>
     </div>
 </div>
