@@ -211,21 +211,24 @@ Use `dotnet run` to start the app and open the provided localhost URL.
     - **Out for Delivery:** Real-time count of bottles assigned to the rider.
     - **Total Bottles Delivered:** Cumulative successful completions.
 
-#### 6. POS / Sales (`Sales/POS.cshtml`)
+#### 6. POS / Sales (`Sales/POS.cshtml`) ✅ [COMPLETED]
 - **Mode Toggle:** Switch between "Walk-In" and "Delivery".
 - **Product Grid:** Responsive grid with stock counts and +/- logic.
 - **Order Summary:** Sidebar calculating Subtotal, Tax, and Total in real-time.
+- **Rider Capacity Enforcement:** AJAX-based check ensuring no rider exceeds **20 bottles** (Gallon products).
+- **AJAX Processing:** Smooth transaction handling with professional error modals for capacity violations.
 
-#### 7. Bottle Ledger (`Bottle/Ledger.cshtml`)
+#### 7. Bottle Ledger (`Bottle/Ledger.cshtml`) ✅ [COMPLETED]
 - **Customer Search:** Global search bar.
 - **History Table:** Row-by-row transaction log with "Running Balance" calculation logic in the Razor loop.
 
-#### 8. Assigned Deliveries (`Delivery/Index.cshtml`)
-- **Grid Layout:** Card-based view.
-- **Role Awareness:** 
-    - **Admin/Staff:** See all deliveries.
-    - **Rider:** Filtered to only show deliveries where `RiderID == CurrentUser.ID`.
-- **Actions:** "Mark Delivered" triggers a status update and refreshes the card.
+#### 8. Assigned Deliveries (`Delivery/Index.cshtml`) ✅ [COMPLETED]
+- **Tabbed Interface:** Unified view for "Active Deliveries" and "Delivery History" (including Cancelled orders).
+- **Inventory Restoration:** Automated logic to restore product `stock` when a delivery is cancelled.
+- **Role-Protected Actions:** 
+    - **Admin/Staff:** "Print Receipt" icon, "Complete Order", and "Cancel Order" functionality.
+    - **Rider:** Restricted to "Mark Delivered" status updates.
+- **Visual Feedback:** Color-coded status badges and detailed order summaries on each delivery card.
 
 ---
 
@@ -233,9 +236,20 @@ Use `dotnet run` to start the app and open the provided localhost URL.
 
 ## 🛠️ UI Technical Standards
 1. **Responsiveness:** Maintain Stitch grid behavior across devices.
-2. **Interactivity:** Use vanilla JS for POS sidebar calculations.
+2. **Interactivity:** Use vanilla JS and Fetch API for POS sidebar calculations and server-side validation.
 3. **Icons & Branding:** Strictly extract and use the SVG icons and logo exactly as they appear in the `ADMIN/bottle_ledger` template for the global sidebar layout across all roles.
+4. **Error Handling:** Premium message modals for business logic violations (e.g., Rider Capacity).
 
-### Phase 4 — Polish & Verification ✅ [PENDING]
-1.  **Validation & Security:** Implement role-based [Authorize] logic.
-2.  **Verification:** Complete end-to-end walkthrough for all Admin and Staff flows.
+### Phase 4 — Employee Management & Polish 🔧 [IN-PROGRESS]
+1.  **Employee Management Fix**: 
+    *   Fix the delete functionality in `UsersController.cs`.
+    *   Ensure proper cascading or status-based "Soft Delete" to prevent database errors if the user has existing sales/deliveries.
+2.  **Validation & Security:** Implement role-based `[Authorize]` logic across all controllers.
+3.  **Verification:** Complete end-to-end walkthrough for all Admin and Staff flows.
+
+---
+
+### 🚀 Next immediate steps for the new session:
+- [ ] Open `Controllers/UsersController.cs` and check the `Delete` action logic.
+- [ ] Verify the `Views/Users/Index.cshtml` delete button routing and confirmation modal.
+- [ ] Test deleting an employee with and without active delivery assignments.
