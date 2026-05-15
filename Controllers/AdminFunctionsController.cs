@@ -68,10 +68,18 @@ namespace H2BIG.Controllers
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin") return RedirectToAction("Login", "Auth");
 
-            // Sales Velocity
-            ViewBag.TotalSalesToday = _db.ExecuteScalar("SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE DATE(date_time) = CURRENT_DATE()") ?? 0;
-            ViewBag.TotalSalesWeekly = _db.ExecuteScalar("SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE date_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)") ?? 0;
-            ViewBag.TotalSalesMonthly = _db.ExecuteScalar("SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE date_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)") ?? 0;
+            // Sales Velocity (Only count Walk-In or Completed Deliveries)
+            string salesFilter = " JOIN sales s ON d.sale_id = s.id WHERE (s.type = 'Walk-In' OR d.status = 'Completed')";
+            
+            string baseSalesQuery = @"
+                SELECT COALESCE(SUM(s.total_amount), 0) 
+                FROM sales s
+                LEFT JOIN deliveries d ON s.id = d.sale_id
+                WHERE (s.type = 'Walk-In' OR d.status = 'Completed') AND ";
+
+            ViewBag.TotalSalesToday = _db.ExecuteScalar(baseSalesQuery + "DATE(s.date_time) = CURRENT_DATE()") ?? 0;
+            ViewBag.TotalSalesWeekly = _db.ExecuteScalar(baseSalesQuery + "s.date_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)") ?? 0;
+            ViewBag.TotalSalesMonthly = _db.ExecuteScalar(baseSalesQuery + "s.date_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)") ?? 0;
 
             // Logistics
             ViewBag.PendingDeliveries = _db.ExecuteScalar("SELECT COUNT(*) FROM deliveries WHERE status = 'Pending'") ?? 0;
@@ -109,7 +117,11 @@ namespace H2BIG.Controllers
             var chartDataDt = _db.ExecuteQuery(@"
                 SELECT 
                     m.month,
-                    (SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE MONTH(date_time) = m.month AND YEAR(date_time) = YEAR(CURRENT_DATE())) as Revenue,
+                    (SELECT COALESCE(SUM(s.total_amount), 0) 
+                     FROM sales s 
+                     LEFT JOIN deliveries d ON s.id = d.sale_id
+                     WHERE MONTH(s.date_time) = m.month AND YEAR(s.date_time) = YEAR(CURRENT_DATE())
+                     AND (s.type = 'Walk-In' OR d.status = 'Completed')) as Revenue,
                     (SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE MONTH(date) = m.month AND YEAR(date) = YEAR(CURRENT_DATE())) as Expenses
                 FROM (
                     SELECT 1 as month UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 
@@ -134,6 +146,32 @@ namespace H2BIG.Controllers
             ViewBag.ChartExpenses = System.Text.Json.JsonSerializer.Serialize(expenses);
 
             return View();
+        }
+        public IActionResult ExportDailySales()
+        {
+            if (HttpContext.Session.GetString("UserRole") != "Admin") return RedirectToAction("Login", "Auth");
+
+            var dt = _db.ExecuteQuery(@"
+                SELECT 
+                    s.id as SaleId, 
+                    s.date_time, 
+                    COALESCE(c.name, 'Walk-In') as CustomerName, 
+                    p.name as ProductName, 
+                    si.quantity, 
+                    p.price, 
+                    si.subtotal,
+                    s.type
+                FROM sales s
+                JOIN sale_items si ON s.id = si.sale_id
+                JOIN products p ON si.product_id = p.id
+                LEFT JOIN customers c ON s.customer_id = c.id
+                LEFT JOIN deliveries d ON s.id = d.sale_id
+                WHERE DATE(s.date_time) = CURRENT_DATE()
+                AND (s.type = 'Walk-In' OR d.status = 'Completed')
+                ORDER BY s.date_time ASC");
+
+            ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
+            return View("DailySalesReport", dt);
         }
     }
 }

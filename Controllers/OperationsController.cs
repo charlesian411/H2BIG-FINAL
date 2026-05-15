@@ -145,13 +145,44 @@ namespace H2BIG.Controllers
 
             if (status == "Cancelled")
             {
-                // Restore inventory: Add quantities back to products
+                // 1. Restore Inventory Stock
                 string restoreQuery = @"
                     UPDATE products p
                     JOIN sale_items si ON p.id = si.product_id
                     SET p.stock = p.stock + si.quantity
                     WHERE si.sale_id = @sid";
                 _db.ExecuteNonQuery(restoreQuery, new MySqlParameter[] { new MySqlParameter("@sid", saleId) });
+
+                // 2. Reverse Bottle Debt
+                var dtSale = _db.ExecuteQuery("SELECT customer_id, (SELECT SUM(quantity) FROM sale_items WHERE sale_id = @sid) as total_qty FROM sales WHERE id = @sid", 
+                    new MySqlParameter[] { new MySqlParameter("@sid", saleId) });
+                
+                if (dtSale.Rows.Count > 0 && dtSale.Rows[0]["customer_id"] != DBNull.Value)
+                {
+                    int customerId = Convert.ToInt32(dtSale.Rows[0]["customer_id"]);
+                    int qtyToReverse = Convert.ToInt32(dtSale.Rows[0]["total_qty"]);
+
+                    // Subtract from customer debt
+                    _db.ExecuteNonQuery("UPDATE customers SET bottle_debt = bottle_debt - @qty WHERE id = @cid",
+                        new MySqlParameter[] {
+                            new MySqlParameter("@qty", qtyToReverse),
+                            new MySqlParameter("@cid", customerId)
+                        });
+
+                    // Log to Ledger
+                    var currentBalance = _db.ExecuteScalar("SELECT bottle_debt FROM customers WHERE id = @cid", 
+                        new MySqlParameter[] { new MySqlParameter("@cid", customerId) });
+
+                    _db.ExecuteNonQuery(@"
+                        INSERT INTO bottle_ledger (customer_id, bottles_out, bottles_in, balance, transaction_id, date)
+                        VALUES (@cid, 0, @qty, @bal, @sid, NOW())",
+                        new MySqlParameter[] {
+                            new MySqlParameter("@cid", customerId),
+                            new MySqlParameter("@qty", qtyToReverse),
+                            new MySqlParameter("@bal", currentBalance),
+                            new MySqlParameter("@sid", saleId)
+                        });
+                }
             }
 
             _db.ExecuteNonQuery("UPDATE deliveries SET status = @status WHERE id = @id", new MySqlParameter[] { 

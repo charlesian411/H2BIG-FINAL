@@ -1,0 +1,188 @@
+@using System.Data
+@model DataTable
+@{
+    Layout = null;
+    decimal totalSales = 0;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Sales Report - @ViewBag.ReportDate</title>
+    <style>
+        @@body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #333;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-cols: 1fr 1fr 1fr;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .info-item b {
+            text-transform: uppercase;
+            font-size: 12px;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            text-align: left;
+        }
+        td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            font-size: 13px;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .total-box {
+            border: 2px solid #333;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .signature-line {
+            margin-top: 50px;
+            border-top: 1px solid #333;
+            width: 200px;
+            text-align: center;
+            font-size: 12px;
+            padding-top: 5px;
+        }
+        @@media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+        }
+        .print-btn {
+            background: #00488d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: right;">
+        <button class="print-btn" onclick="window.print()">PRINT / SAVE AS PDF</button>
+    </div>
+
+    <div class="header">
+        <h1>Daily Sales Report</h1>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <b>Store Name:</b><br>
+            H2BIG Water Refilling Station
+        </div>
+        <div class="info-item" style="text-align: center;">
+            <b>Date:</b><br>
+            @ViewBag.ReportDate
+        </div>
+        <div class="info-item" style="text-align: right;">
+            <b>Unit:</b><br>
+            Philippine Peso (₱)
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;">#</th>
+                <th>Product Name / Item No.</th>
+                <th>Type</th>
+                <th>Customer</th>
+                <th class="text-right">Price</th>
+                <th class="text-center">Qty</th>
+                <th class="text-right">Amount Collected</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Rows.Count > 0)
+            {
+                foreach (DataRow row in Model.Rows)
+                {
+                    decimal subtotal = Convert.ToDecimal(row["subtotal"]);
+                    totalSales += subtotal;
+                    <tr>
+                        <td class="text-center">#@row["SaleId"]</td>
+                        <td>@row["ProductName"]</td>
+                        <td>@row["type"]</td>
+                        <td>@row["CustomerName"]</td>
+                        <td class="text-right">@Convert.ToDecimal(row["price"]).ToString("N2")</td>
+                        <td class="text-center">@row["quantity"]</td>
+                        <td class="text-right">@subtotal.ToString("N2")</td>
+                        <td>@row["date_time"]</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #999;">No sales recorded for today.</td>
+                </tr>
+            }
+            @for (int i = Model?.Rows.Count ?? 0; i < 15; i++)
+            {
+                <tr>
+                    <td style="color: transparent;">@i</td>
+                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <div>
+            <div class="signature-line">Prepared By</div>
+            <div class="signature-line">Verified By</div>
+        </div>
+        <div class="total-box">
+            Total Sales: ₱@totalSales.ToString("N2")
+        </div>
+    </div>
+
+    <script>
+        // Auto-open print dialog if needed
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

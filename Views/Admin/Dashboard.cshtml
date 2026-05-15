@@ -6,6 +6,9 @@
     var recentWalkIns = ViewBag.RecentWalkIns as System.Data.DataTable;
 }
 
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
 <!-- Page Header -->
 <div class="flex items-end justify-between">
     <div>
@@ -85,17 +88,8 @@
                 Sales Trends (Last 7 Days)
             </h2>
         </div>
-        <div class="flex-1 p-stack-md flex items-end gap-2 relative">
-            <!-- Simulated Bars -->
-            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[40%] rounded-t-sm"></div>
-            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[60%] rounded-t-sm"></div>
-            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[30%] rounded-t-sm"></div>
-            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[80%] rounded-t-sm"></div>
-            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[50%] rounded-t-sm"></div>
-            <div class="flex-1 bg-primary-container hover:bg-primary transition-colors h-[95%] rounded-t-sm relative">
-                <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-surface-container-highest text-on-surface text-[10px] font-label-bold px-1 rounded whitespace-nowrap">Peak</div>
-            </div>
-            <div class="flex-1 bg-primary-fixed hover:bg-primary transition-colors h-[45%] rounded-t-sm"></div>
+        <div class="flex-1 p-stack-sm min-h-0">
+            <div id="salesTrendsChart" class="w-full h-full"></div>
         </div>
     </div>
 
@@ -240,3 +234,58 @@
         </table>
     </div>
 </div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var days = @Html.Raw(ViewBag.ChartDays);
+            var revenues = @Html.Raw(ViewBag.ChartRevenues);
+
+            var options = {
+                series: [{
+                    name: 'Revenue',
+                    data: revenues
+                }],
+                chart: {
+                    type: 'bar',
+                    height: '100%',
+                    toolbar: { show: false },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                colors: ['#00488d'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        columnWidth: '50%',
+                    }
+                },
+                dataLabels: { enabled: false },
+                xaxis: {
+                    categories: days,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                        style: { colors: '#666', fontSize: '11px' }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (val) { return "₱" + val.toLocaleString(); },
+                        style: { colors: '#666', fontSize: '11px' }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                    yaxis: { lines: { show: true } }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) { return "₱" + val.toLocaleString(); }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#salesTrendsChart"), options);
+            chart.render();
+        });
+    </script>
+}

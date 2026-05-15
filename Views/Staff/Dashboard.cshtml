@@ -12,24 +12,62 @@
 </div>
 
 <!-- KPI Cards Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-gutter mt-stack-md">
-    <!-- Total Revenue -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-gutter mt-stack-md">
+    <!-- Today's Sales Count -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group h-[120px] justify-between">
         <div class="flex justify-between items-start">
-            <span class="font-label-bold text-label-bold text-on-surface-variant">Sales Today</span>
-            <span class="material-symbols-outlined text-outline text-[20px]">account_balance</span>
+            <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px]">Today's Sales Count</span>
+            <div class="bg-surface-container-low p-1 rounded">
+                <span class="material-symbols-outlined text-primary text-[18px]">trending_up</span>
+            </div>
         </div>
-        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">₱@ViewBag.SalesToday</div>
+        <div class="flex items-baseline gap-2">
+            <div class="font-display-lg text-display-lg text-on-surface">@ViewBag.SalesCount</div>
+            <span class="text-[10px] text-primary font-bold">+12% vs avg</span>
+        </div>
         <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
     </div>
 
-    <!-- Active Orders -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group">
+    <!-- Pending Deliveries -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group h-[120px] justify-between">
         <div class="flex justify-between items-start">
-            <span class="font-label-bold text-label-bold text-on-surface-variant">Pending Deliveries</span>
-            <span class="material-symbols-outlined text-outline text-[20px]">local_shipping</span>
+            <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px]">Pending Deliveries</span>
+            <div class="bg-error-container p-1 rounded">
+                <span class="material-symbols-outlined text-error text-[18px]">local_shipping</span>
+            </div>
         </div>
-        <div class="font-display-lg text-display-lg text-on-surface mt-stack-sm">@ViewBag.PendingDeliveries</div>
+        <div class="flex items-baseline gap-2">
+            <div class="font-display-lg text-display-lg text-error">@ViewBag.PendingDeliveries</div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Needs dispatch</span>
+        </div>
+        <div class="absolute bottom-0 left-0 h-1 w-full bg-error scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+    </div>
+
+    <!-- Bottles In / Out -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded p-stack-md flex flex-col gap-unit hover:border-outline transition-colors relative overflow-hidden group h-[120px] justify-between">
+        <div class="flex justify-between items-start">
+            <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px]">Bottles In / Out</span>
+            <div class="bg-surface-container-low p-1 rounded">
+                <span class="material-symbols-outlined text-on-surface-variant text-[18px]">sync_alt</span>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <div class="flex justify-between items-center text-[11px]">
+                <span class="text-on-surface-variant">Returned (In)</span>
+                <span class="font-bold text-on-surface">@ViewBag.BottlesIn</span>
+            </div>
+            <div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+                @{
+                    var total = (int)ViewBag.BottlesIn + (int)ViewBag.BottlesOut;
+                    var inPercent = total > 0 ? ((int)ViewBag.BottlesIn * 100) / total : 0;
+                }
+                <div class="bg-primary h-full transition-all duration-500" style="width: @inPercent%"></div>
+            </div>
+            <div class="flex justify-between items-center text-[11px]">
+                <span class="text-on-surface-variant">Dispatched (Out)</span>
+                <span class="font-bold text-on-surface">@ViewBag.BottlesOut</span>
+            </div>
+        </div>
         <div class="absolute bottom-0 left-0 h-1 w-full bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
     </div>
 </div>

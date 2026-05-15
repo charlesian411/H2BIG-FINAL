@@ -14,14 +14,10 @@
         <p class="text-on-surface-variant font-body-sm text-body-sm mt-1">System overview and executive metrics.</p>
     </div>
     <div class="flex gap-2">
-        <button class="h-10 border border-outline-variant hover:bg-surface-container text-on-surface font-label-bold text-label-bold px-4 rounded flex items-center gap-2 transition-colors bg-surface-lowest shadow-sm">
+        <a href="@Url.Action("ExportDailySales", "Report")" target="_blank" class="h-10 border border-outline-variant hover:bg-surface-container text-on-surface font-label-bold text-label-bold px-4 rounded flex items-center gap-2 transition-colors bg-surface-lowest shadow-sm no-underline">
             <span class="material-symbols-outlined text-[18px]">download</span>
             Export PDF
-        </button>
-        <button class="h-10 border border-outline-variant hover:bg-surface-container text-on-surface font-label-bold text-label-bold px-4 rounded flex items-center gap-2 transition-colors bg-surface-lowest shadow-sm">
-            <span class="material-symbols-outlined text-[18px]">calendar_today</span>
-            Date Range
-        </button>
+        </a>
     </div>
 </div>
 
@@ -94,7 +90,7 @@
             <table class="w-full text-left border-collapse">
                 <thead class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant shadow-[0_1px_0_0_#c2c6d4]">
                     <tr>
-                        <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold">Customer ID</th>
+                        <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold">Customer Name</th>
                         <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold text-center">Units</th>
                         <th class="py-2 px-4 font-label-bold text-[12px] text-on-surface-variant font-bold text-right">Status</th>
                     </tr>
@@ -112,7 +108,7 @@
                             var unitColor = severity == "Critical" ? "text-error font-bold" : "text-on-surface-variant";
 
                             <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
-                                <td class="py-3 px-4 text-[13px] text-primary font-medium hover:underline cursor-pointer">CUST-@row["id"]</td>
+                                <td class="py-3 px-4 text-[13px] text-primary font-medium hover:underline cursor-pointer">@row["name"]</td>
                                 <td class="py-3 px-4 text-[13px] text-center @unitColor">@row["bottle_debt"]</td>
                                 <td class="py-3 px-4 text-right">
                                     <span class="inline-flex items-center justify-center px-2 py-0.5 border rounded text-[10px] font-bold @severityBg">

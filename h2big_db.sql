@@ -1,4 +1,5 @@
-CREATE DATABASE IF NOT EXISTS h2big_db;
+DROP DATABASE IF EXISTS h2big_db;
+CREATE DATABASE h2big_db;
 USE h2big_db;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -25,7 +26,8 @@ CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    stock INT DEFAULT 0
+    stock INT DEFAULT 0,
+    default_qty INT DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS sales (
@@ -55,9 +57,25 @@ CREATE TABLE IF NOT EXISTS deliveries (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sale_id INT NOT NULL,
     rider_id INT NOT NULL,
-    status ENUM('Pending', 'Delivered', 'Cancelled') DEFAULT 'Pending',
+    status ENUM('Pending', 'Delivered', 'Completed', 'Cancelled') DEFAULT 'Pending',
     FOREIGN KEY (sale_id) REFERENCES sales(id),
     FOREIGN KEY (rider_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS remittances (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rider_id INT NOT NULL,
+    delivery_id INT NOT NULL,
+    date DATE NOT NULL,
+    expected_bottles INT NOT NULL,
+    expected_empties INT NOT NULL,
+    expected_cash DECIMAL(10, 2) NOT NULL,
+    declared_bottles INT NOT NULL,
+    declared_empties INT NOT NULL,
+    declared_cash DECIMAL(10, 2) NOT NULL,
+    status ENUM('Pending Check-In', 'Completed') DEFAULT 'Pending Check-In',
+    FOREIGN KEY (rider_id) REFERENCES users(id),
+    FOREIGN KEY (delivery_id) REFERENCES deliveries(id)
 );
 
 CREATE TABLE IF NOT EXISTS bottle_ledger (
@@ -87,10 +105,10 @@ INSERT IGNORE INTO users (id, fullname, username, password, role) VALUES
 (2, 'John Doe (Staff)', 'staff1', 'staff123', 'Staff'),
 (3, 'Mike Rider', 'rider1', 'rider123', 'Rider');
 
-INSERT IGNORE INTO products (id, name, price, stock) VALUES
-(1, '5-Gallon Slim Container', 40.00, 100),
-(2, '5-Gallon Round Container', 35.00, 150),
-(3, '1-Gallon Container', 20.00, 50);
+INSERT IGNORE INTO products (id, name, price, stock, default_qty) VALUES
+(1, '5-Gallon Slim Container', 40.00, 100, 1),
+(2, '5-Gallon Round Container', 35.00, 150, 1),
+(3, '1-Gallon Container', 20.00, 50, 1);
 
 INSERT IGNORE INTO customers (id, name, contact, address, bottle_debt) VALUES
 (1, 'Walk-In Customer', 'N/A', 'N/A', 0),
